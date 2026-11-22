@@ -14,6 +14,7 @@ gradle.beforeSettings { settings ->
 
 gradle.beforeProject { project ->
     if (project.rootProject.projectDir.name == 'android') {
+        project.buildscript.repositories.maven { url = uri(centralMirror) }
         project.repositories.maven { url = uri(centralMirror) }
     }
 }
