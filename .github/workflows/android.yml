@@ -1,0 +1,92 @@
+name: Android verification
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.50.1'
+          channel: stable
+          cache: true
+      - name: Configure Maven Central mirror
+        run: |
+          mkdir -p ~/.gradle/init.d
+          cp scripts/ci-gradle-mirror.init.gradle ~/.gradle/init.d/
+      - name: Static and widget checks
+        run: |
+          flutter doctor -v
+          flutter pub get
+          dart format --output=none --set-exit-if-changed lib test integration_test
+          flutter analyze
+          flutter test
+      - uses: actions/upload-artifact@v6
+        with:
+          name: demo-posters
+          path: build/demo-posters
+          if-no-files-found: error
+      - name: Build Android packages
+        run: |
+          flutter build apk --debug
+          flutter build apk --release
+          flutter build appbundle --release
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-debug.apk dist/blood-request-debug.apk
+          cp build/app/outputs/flutter-apk/app-release.apk dist/blood-request-unsigned.apk
+          cp build/app/outputs/bundle/release/app-release.aab dist/blood-request-unsigned.aab
+          (cd dist && sha256sum *.apk *.aab > SHA256SUMS)
+      - uses: actions/upload-artifact@v6
+        with:
+          name: blood-request-android
+          path: dist
+          if-no-files-found: error
+
+  emulator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [29, 35, 36]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.50.1'
+          channel: stable
+          cache: true
+      - name: Configure Maven Central mirror
+        run: |
+          mkdir -p ~/.gradle/init.d
+          cp scripts/ci-gradle-mirror.init.gradle ~/.gradle/init.d/
+      - run: flutter pub get
+      - name: Enable KVM access
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' |
+            sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api }}
+          arch: x86_64
+          disable-animations: true
+          script: bash scripts/emulator-test.sh
