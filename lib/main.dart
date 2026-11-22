@@ -1,9 +1,8 @@
 import 'dart:math';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'model.dart';
 import 'platform.dart';
@@ -56,11 +55,12 @@ class _BloodRequestAppState extends State<BloodRequestApp> {
           }
         }
       }
-      if (mounted)
+      if (mounted) {
         setState(() {
           ready = true;
           failed = false;
         });
+      }
     } on PlatformException {
       if (mounted) setState(() => failed = true);
     }
@@ -217,10 +217,10 @@ class _WorkspaceState extends State<Workspace> {
     if (recent.length > 3) recent.removeLast();
   });
 
-  void notice(String message) {
-    if (mounted)
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(message)));
+  void notice(String message, {SnackBarAction? action}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message), action: action));
   }
 
   Future<bool> confirm(String message) async =>
@@ -269,8 +269,9 @@ class _WorkspaceState extends State<Workspace> {
                 'बिना सहेजे बदलाव छोड़ें?',
                 'Discard unsaved changes?',
               ),
-            )))
+            ))) {
       return;
+    }
     if (mounted) setState(() => editing = false);
   }
 
@@ -734,18 +735,20 @@ class _WorkspaceState extends State<Workspace> {
         onChanged: (_) => mutate(() {}),
         validator: (value) {
           if (!requiredFields.contains(field)) return null;
-          if (value == null || value.trim().isEmpty)
+          if (value == null || value.trim().isEmpty) {
             return t(
               'یہ خانہ لازمی ہے',
               'यह जानकारी आवश्यक है',
               'This field is required',
             );
-          if (phone && !validPhone(value))
+          }
+          if (phone && !validPhone(value)) {
             return t(
               'درست فون نمبر درج کریں',
               'सही फ़ोन नंबर डालें',
               'Enter a valid phone number',
             );
+          }
           return null;
         },
       ),
@@ -846,11 +849,12 @@ class _WorkspaceState extends State<Workspace> {
         ..addAll(original);
       rethrow;
     }
-    if (mounted)
+    if (mounted) {
       setState(() {
         draftId = id;
         dirty = false;
       });
+    }
     notice(t('ڈرافٹ محفوظ ہوگیا', 'ड्राफ़्ट सहेजा गया', 'Draft saved'));
   }
 
@@ -861,8 +865,9 @@ class _WorkspaceState extends State<Workspace> {
         'चुने हुए ड्राफ़्ट हटाएँ?',
         'Delete the selected drafts?',
       ),
-    ))
+    )) {
       return;
+    }
     if (!mounted) return;
     await run(() async {
       final original = widget.drafts.toList();
@@ -875,8 +880,9 @@ class _WorkspaceState extends State<Workspace> {
           ..addAll(original);
         rethrow;
       }
-      if (mounted && (id == null || id == draftId))
+      if (mounted && (id == null || id == draftId)) {
         setState(() => draftId = null);
+      }
     });
   }
 
@@ -898,8 +904,9 @@ class _WorkspaceState extends State<Workspace> {
             'यह काल्पनिक नमूना है। जारी रखें?',
             'This is a fictional example. Continue?',
           ),
-        ))
+        )) {
       return;
+    }
     if (!mounted) return;
     var jpeg = false;
     var quality = 95.0;
@@ -1005,8 +1012,15 @@ class _WorkspaceState extends State<Workspace> {
         action == 'invite' ? inviteMessage(l) : null,
       );
       if (action == 'save') {
-        if (await widget.device.save(payload)) {
-          notice(t('تصویر محفوظ ہوگئی', 'चित्र सहेजा गया', 'Image saved'));
+        final uri = await widget.device.save(payload);
+        if (uri != null) {
+          notice(
+            t('تصویر محفوظ ہوگئی', 'चित्र सहेजा गया', 'Image saved'),
+            action: SnackBarAction(
+              label: t('کھولیں', 'खोलें', 'Open'),
+              onPressed: () => run(() => widget.device.open(uri, options.mime)),
+            ),
+          );
         }
       } else {
         await widget.device.share(payload);

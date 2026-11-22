@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -30,6 +30,11 @@ jobs:
           dart format --output=none --set-exit-if-changed lib test integration_test
           flutter analyze
           flutter test
+      - uses: actions/upload-artifact@v6
+        with:
+          name: demo-posters
+          path: build/demo-posters
+          if-no-files-found: error
       - name: Build Android packages
         run: |
           flutter build apk --debug
@@ -40,15 +45,10 @@ jobs:
           cp build/app/outputs/flutter-apk/app-release.apk dist/blood-request-unsigned.apk
           cp build/app/outputs/bundle/release/app-release.aab dist/blood-request-unsigned.aab
           (cd dist && sha256sum *.apk *.aab > SHA256SUMS)
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: blood-request-android
           path: dist
-          if-no-files-found: error
-      - uses: actions/upload-artifact@v4
-        with:
-          name: demo-posters
-          path: build/demo-posters
           if-no-files-found: error
 
   emulator:
@@ -57,10 +57,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api: [29, 35]
+        api: [29, 35, 36]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'

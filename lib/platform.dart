@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 
@@ -29,8 +28,11 @@ class Device {
         }),
       );
 
-  Future<bool> save(SharePayload payload) async =>
-      await channel.invokeMethod<bool>('save', _arguments(payload)) ?? false;
+  Future<String?> save(SharePayload payload) =>
+      channel.invokeMethod<String>('save', _arguments(payload));
+
+  Future<void> open(String uri, String mime) =>
+      channel.invokeMethod<void>('open', {'uri': uri, 'mime': mime});
 
   Future<void> share(SharePayload payload) =>
       channel.invokeMethod<void>('share', _arguments(payload));

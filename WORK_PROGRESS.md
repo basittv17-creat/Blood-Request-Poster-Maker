@@ -14,3 +14,5 @@ Working branch: feat/offline-poster-maker. Target: main.
 | M8 | Merge gated on all mandatory verification. Public release requires owner approval. |
 
 The local Flutter project-creation command was rejected by automated review after the runner detected an instance metadata endpoint request. Android project files were assembled from the SDK templates and GitHub-hosted CI is configured for verification. The local environment lacks /dev/kvm. No check is recorded as passed here without observed evidence.
+
+First PR workflow: [run 44997991869](https://github.com/basittv17-creat/Blood-Request-Poster-Maker/actions/runs/44997991869). Static analysis failed on compatibility imports and style lints. The follow-up migrates to the maintained Material UI package, applies the reported lint fixes, enables the debug VM service manifest for device tests, and adds an Android 16 emulator gate. The release manifest retains zero network permissions.

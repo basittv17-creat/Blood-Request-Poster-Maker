@@ -1,7 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-
 enum Language {
   ur('اردو'),
   hi('हिन्दी'),
