@@ -1,0 +1,1016 @@
+import 'dart:math';
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+import 'model.dart';
+import 'platform.dart';
+import 'poster.dart';
+
+void main() => runApp(const BloodRequestApp());
+
+class BloodRequestApp extends StatefulWidget {
+  const BloodRequestApp({super.key});
+
+  @override
+  State<BloodRequestApp> createState() => _BloodRequestAppState();
+}
+
+class _BloodRequestAppState extends State<BloodRequestApp> {
+  final device = Device();
+  final drafts = <PosterDraft>[];
+  final favorites = <int>{};
+  Language? selected;
+  bool ready = false;
+  bool failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    load();
+  }
+
+  Future<void> load() async {
+    try {
+      final data = await device.read();
+      selected = Language.values.asNameMap()[data['language']];
+      final savedFavorites = data['favorites'];
+      if (savedFavorites is List) {
+        favorites.addAll(
+          savedFavorites.whereType<int>().where(
+            (i) => i >= 0 && i < designs.length,
+          ),
+        );
+      }
+      final records = data['drafts'];
+      if (records is List) {
+        for (final record in records.whereType<Map<String, dynamic>>()) {
+          try {
+            drafts.add(PosterDraft.fromJson(record));
+          } on FormatException {
+            continue;
+          } on TypeError {
+            continue;
+          }
+        }
+      }
+      if (mounted)
+        setState(() {
+          ready = true;
+          failed = false;
+        });
+    } on PlatformException {
+      if (mounted) setState(() => failed = true);
+    }
+  }
+
+  Future<void> persist() =>
+      device.write(UserSettings(selected, favorites), drafts);
+
+  @override
+  Widget build(BuildContext context) {
+    final language = selected ?? Language.ur;
+    ThemeData theme(Brightness mode) => ThemeData(
+      useMaterial3: true,
+      brightness: mode,
+      fontFamily: language.font,
+      fontFamilyFallback: const ['Naskh', 'Devanagari', 'Roboto'],
+      colorSchemeSeed: const Color(0xffa01639),
+    );
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      onGenerateTitle: (_) =>
+          language.t('ضرورتِ خون', 'रक्त अनुरोध', 'Blood Request'),
+      supportedLocales: const [Locale('ur'), Locale('hi'), Locale('en')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      locale: Locale(language.name),
+      theme: theme(Brightness.light),
+      darkTheme: theme(Brightness.dark),
+      home: !ready
+          ? Scaffold(
+              body: Center(
+                child: failed
+                    ? FilledButton(
+                        onPressed: load,
+                        child: const Text('دوبارہ کوشش کریں / Retry'),
+                      )
+                    : const CircularProgressIndicator(),
+              ),
+            )
+          : Workspace(
+              language: language,
+              chooseFirst: selected == null,
+              drafts: drafts,
+              favorites: favorites,
+              device: device,
+              persist: persist,
+              select: (value) async {
+                await device.write(UserSettings(value, favorites), drafts);
+                if (mounted) setState(() => selected = value);
+              },
+            ),
+    );
+  }
+}
+
+class Workspace extends StatefulWidget {
+  const Workspace({
+    super.key,
+    required this.language,
+    required this.chooseFirst,
+    required this.drafts,
+    required this.favorites,
+    required this.device,
+    required this.persist,
+    required this.select,
+  });
+  final Language language;
+  final bool chooseFirst;
+  final List<PosterDraft> drafts;
+  final Set<int> favorites;
+  final Device device;
+  final Future<void> Function() persist;
+  final Future<void> Function(Language) select;
+
+  @override
+  State<Workspace> createState() => _WorkspaceState();
+}
+
+class _WorkspaceState extends State<Workspace> {
+  final form = GlobalKey<FormState>();
+  final controllers = {
+    for (final field in fields) field: TextEditingController(),
+  };
+  final random = Random();
+  final recent = <int>[0];
+  String group = 'B+';
+  String? draftId;
+  bool editing = false, demo = false, emergency = true, illustration = true;
+  bool invite = false, accent = false, largeGroup = false, reverse = false;
+  bool busy = false, dirty = false;
+  int design = 0;
+
+  Language get l => widget.language;
+  String t(String ur, String hi, String en) => l.t(ur, hi, en);
+  String get title => t('ضرورتِ خون', 'रक्त अनुरोध', 'Blood Request');
+  String get cancel => t('منسوخ', 'रद्द करें', 'Cancel');
+  String get done => t('تصدیق کریں', 'पुष्टि करें', 'Confirm');
+
+  PosterRequest get request => PosterRequest(
+    values: {for (final field in fields) field: controllers[field]!.text},
+    group: group,
+    demo: demo,
+    emergency: emergency,
+    illustration: illustration,
+    invite: invite,
+    accent: accent,
+    largeGroup: largeGroup,
+    reverse: reverse,
+  );
+
+  @override
+  void dispose() {
+    for (final controller in controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  void open([
+    PosterRequest value = const PosterRequest(),
+    int template = 0,
+    String? id,
+  ]) {
+    setState(() {
+      for (final field in fields) {
+        controllers[field]!.text = value[field];
+      }
+      draftId = id;
+      group = value.group;
+      demo = value.demo;
+      emergency = value.emergency;
+      illustration = value.illustration;
+      invite = value.invite;
+      accent = value.accent;
+      largeGroup = value.largeGroup;
+      reverse = value.reverse;
+      design = template;
+      recent
+        ..clear()
+        ..add(design);
+      editing = true;
+      dirty = false;
+    });
+  }
+
+  void mutate(VoidCallback change) => setState(() {
+    change();
+    dirty = true;
+  });
+  void setDesign(int number) => mutate(() {
+    design = number;
+    recent
+      ..remove(number)
+      ..insert(0, number);
+    if (recent.length > 3) recent.removeLast();
+  });
+
+  void notice(String message) {
+    if (mounted)
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<bool> confirm(String message) async =>
+      await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(done),
+            ),
+          ],
+        ),
+      ) ??
+      false;
+
+  Future<void> run(Future<void> Function() action) async {
+    if (busy) return;
+    setState(() => busy = true);
+    try {
+      await action();
+    } on Object {
+      notice(
+        t(
+          'کام مکمل نہیں ہوا۔ دوبارہ کوشش کریں۔',
+          'कार्य पूरा नहीं हुआ। फिर कोशिश करें।',
+          'Could not complete the action. Try again.',
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> leave() async {
+    if (busy ||
+        (dirty &&
+            !await confirm(
+              t(
+                'غیر محفوظ تبدیلیاں چھوڑ دیں؟',
+                'बिना सहेजे बदलाव छोड़ें?',
+                'Discard unsaved changes?',
+              ),
+            )))
+      return;
+    if (mounted) setState(() => editing = false);
+  }
+
+  Future<void> languagePicker() async {
+    final language = await showModalBottomSheet<Language>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final value in Language.values)
+              ListTile(
+                title: Text(value.label),
+                leading: const Icon(Icons.translate),
+                trailing: value == l ? const Icon(Icons.check) : null,
+                onTap: () => Navigator.pop(context, value),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (language != null && mounted) await run(() => widget.select(language));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.chooseFirst) {
+      return Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Icon(
+                    Icons.bloodtype_rounded,
+                    size: 76,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  Text(
+                    'زبان منتخب کریں\nभाषा चुनें\nChoose a language',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 24),
+                  for (final value in Language.values)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: FilledButton.tonal(
+                        onPressed: busy
+                            ? null
+                            : () => run(() => widget.select(value)),
+                        child: Text(value.label),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return PopScope(
+      canPop: !editing,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && editing) leave();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: editing ? BackButton(onPressed: leave) : null,
+          title: Text(
+            editing
+                ? t('پوسٹر بنائیں', 'पोस्टर बनाएँ', 'Create poster')
+                : title,
+          ),
+          actions: [
+            PopupMenuButton<String>(
+              enabled: !busy,
+              onSelected: (value) {
+                if (value == 'language') languagePicker();
+                if (value == 'privacy') showInfo(true);
+                if (value == 'help') showInfo(false);
+              },
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 'language',
+                  child: Text(t('زبان', 'भाषा', 'Language')),
+                ),
+                PopupMenuItem(
+                  value: 'privacy',
+                  child: Text(t('رازداری', 'गोपनीयता', 'Privacy')),
+                ),
+                PopupMenuItem(
+                  value: 'help',
+                  child: Text(t('مدد', 'सहायता', 'Help')),
+                ),
+              ],
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 840),
+              child: editing ? editor() : home(),
+            ),
+          ),
+        ),
+        bottomNavigationBar: busy ? const LinearProgressIndicator() : null,
+      ),
+    );
+  }
+
+  Future<void> showInfo(bool privacy) => showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(
+        privacy
+            ? t('رازداری', 'गोपनीयता', 'Privacy')
+            : t('مدد', 'सहायता', 'Help'),
+      ),
+      content: Text(
+        privacy
+            ? t(
+                'ڈرافٹس اسی فون پر محفوظ ہیں۔ شیئر کرنے سے پہلے مریض کی اجازت لیں۔',
+                'ड्राफ़्ट इसी फ़ोन पर रहते हैं। साझा करने से पहले रोगी की अनुमति लें।',
+                'Drafts stay on this phone. Obtain patient consent before sharing.',
+              )
+            : t(
+                'تفصیلات بھریں، ڈیزائن منتخب کریں اور پوسٹر محفوظ یا شیئر کریں۔',
+                'जानकारी भरें, डिज़ाइन चुनें और पोस्टर सहेजें या साझा करें।',
+                'Enter the details, select a design, then save or share the poster.',
+              ),
+      ),
+      actions: [
+        if (privacy)
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              removeDrafts();
+            },
+            child: Text(
+              t(
+                'تمام ڈرافٹس حذف کریں',
+                'सभी ड्राफ़्ट हटाएँ',
+                'Delete all drafts',
+              ),
+            ),
+          ),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(t('بند کریں', 'बंद करें', 'Close')),
+        ),
+      ],
+    ),
+  );
+
+  Widget home() => ListView(
+    padding: const EdgeInsets.all(20),
+    children: [
+      Card(
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            poster(PosterRequest.sample, 0),
+            Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    t(
+                      'خون کی درخواست کا پوسٹر بنائیں',
+                      'रक्त अनुरोध का पोस्टर बनाएँ',
+                      'Create a blood request poster',
+                    ),
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    onPressed: busy ? null : open,
+                    icon: const Icon(Icons.add),
+                    label: Text(t('نیا پوسٹر', 'नया पोस्टर', 'New poster')),
+                  ),
+                  OutlinedButton(
+                    onPressed: busy ? null : () => open(PosterRequest.sample),
+                    child: Text(
+                      t('نمونہ دیکھیں', 'नमूना देखें', 'Open example'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 20),
+      Text(
+        t('میرے ڈرافٹس', 'मेरे ड्राफ़्ट', 'My drafts'),
+        style: Theme.of(context).textTheme.titleLarge,
+      ),
+      if (widget.drafts.isEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Text(
+            t(
+              'ابھی کوئی ڈرافٹ نہیں۔',
+              'अभी कोई ड्राफ़्ट नहीं है।',
+              'No saved drafts yet.',
+            ),
+          ),
+        ),
+      for (final draft in widget.drafts.reversed)
+        ListTile(
+          leading: const Icon(Icons.description_outlined),
+          title: Text(
+            draft.request['patient'].isEmpty
+                ? designs[draft.template].name(l)
+                : draft.request['patient'],
+          ),
+          subtitle: Text(draft.request['hospital']),
+          onTap: busy
+              ? null
+              : () => open(draft.request, draft.template, draft.id),
+          trailing: IconButton(
+            tooltip: t('ڈرافٹ حذف کریں', 'ड्राफ़्ट हटाएँ', 'Delete draft'),
+            onPressed: busy ? null : () => removeDrafts(draft.id),
+            icon: const Icon(Icons.delete_outline),
+          ),
+        ),
+    ],
+  );
+
+  Widget poster(PosterRequest data, int index) => Semantics(
+    image: true,
+    label: '${designs[index].name(l)}. ${data.group}. ${data['patient']}',
+    child: AspectRatio(
+      aspectRatio: 16 / 9,
+      child: CustomPaint(painter: PosterPainter(data, l, index)),
+    ),
+  );
+
+  Widget editor() => Form(
+    key: form,
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: poster(request, design),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              OutlinedButton.icon(
+                onPressed: busy
+                    ? null
+                    : () => setDesign(nextDesign(recent, random)),
+                icon: const Icon(Icons.shuffle),
+                label: Text(t('نیا ڈیزائن', 'नया डिज़ाइन', 'New design')),
+              ),
+              OutlinedButton.icon(
+                onPressed: busy ? null : gallery,
+                icon: const Icon(Icons.grid_view),
+                label: Text(t('تمام ڈیزائن', 'सभी डिज़ाइन', 'Design gallery')),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          DropdownButtonFormField<String>(
+            key: ValueKey(group),
+            initialValue: group,
+            decoration: InputDecoration(
+              labelText: label(l, 'group'),
+              border: const OutlineInputBorder(),
+            ),
+            items: [
+              for (final value in groups)
+                DropdownMenuItem(
+                  value: value,
+                  child: Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: Text(value),
+                  ),
+                ),
+            ],
+            onChanged: busy ? null : (value) => mutate(() => group = value!),
+          ),
+          for (final field in requiredFields) input(field),
+          ExpansionTile(
+            title: Text(
+              t('اختیاری تفصیلات', 'वैकल्पिक जानकारी', 'Optional details'),
+            ),
+            children: [
+              for (final name in fields.skip(requiredFields.length))
+                input(name),
+            ],
+          ),
+          ExpansionTile(
+            title: Text(
+              t('ڈیزائن کی ترتیبات', 'डिज़ाइन सेटिंग', 'Design settings'),
+            ),
+            children: [
+              toggle(
+                t('فوری ضرورت', 'तत्काल आवश्यकता', 'Urgent badge'),
+                emergency,
+                (v) => emergency = v,
+              ),
+              toggle(
+                t('تصویر', 'चित्र', 'Illustration'),
+                illustration,
+                (v) => illustration = v,
+              ),
+              toggle(
+                t('متبادل رنگ', 'वैकल्पिक रंग', 'Alternate accent'),
+                accent,
+                (v) => accent = v,
+              ),
+              toggle(
+                t('بڑا بلڈ گروپ', 'बड़ा रक्त समूह', 'Larger blood group'),
+                largeGroup,
+                (v) => largeGroup = v,
+              ),
+              toggle(
+                t('ترتیب بدلیں', 'क्रम बदलें', 'Reverse columns'),
+                reverse,
+                (v) => reverse = v,
+              ),
+              if (appDownloadUrl.isNotEmpty)
+                toggle(
+                  t(
+                    'ڈاؤن لوڈ دعوت',
+                    'डाउनलोड आमंत्रण',
+                    'Include download invitation',
+                  ),
+                  invite,
+                  (v) => invite = v,
+                ),
+              TextButton(
+                onPressed: busy
+                    ? null
+                    : () => mutate(() {
+                        emergency = true;
+                        illustration = true;
+                        accent = false;
+                        largeGroup = false;
+                        reverse = false;
+                        invite = false;
+                      }),
+                child: Text(
+                  t('اصل انداز بحال کریں', 'मूल शैली लौटाएँ', 'Reset style'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 10,
+            runSpacing: 8,
+            children: [
+              FilledButton.icon(
+                onPressed: busy ? null : exportDialog,
+                icon: const Icon(Icons.ios_share),
+                label: Text(
+                  t(
+                    'ایکسپورٹ یا شیئر',
+                    'निर्यात या साझा करें',
+                    'Export or share',
+                  ),
+                ),
+              ),
+              OutlinedButton.icon(
+                onPressed: busy ? null : () => run(saveDraft),
+                icon: const Icon(Icons.save_outlined),
+                label: Text(
+                  t('ڈرافٹ محفوظ کریں', 'ड्राफ़्ट सहेजें', 'Save draft'),
+                ),
+              ),
+              TextButton(
+                onPressed: busy
+                    ? null
+                    : () async {
+                        if (await confirm(
+                              t(
+                                'موجودہ فیلڈز خالی کریں؟',
+                                'मौजूदा फ़ील्ड खाली करें?',
+                                'Clear the current fields?',
+                              ),
+                            ) &&
+                            mounted) {
+                          open(const PosterRequest(), design, draftId);
+                          mutate(() {});
+                        }
+                      },
+                child: Text(
+                  t('فیلڈز خالی کریں', 'फ़ील्ड खाली करें', 'Clear fields'),
+                ),
+              ),
+              if (widget.drafts.isNotEmpty)
+                TextButton(
+                  onPressed: busy
+                      ? null
+                      : () async {
+                          if ((!dirty ||
+                                  await confirm(
+                                    t(
+                                      'آخری ڈرافٹ بحال کریں؟',
+                                      'पिछला ड्राफ़्ट लौटाएँ?',
+                                      'Restore the last draft?',
+                                    ),
+                                  )) &&
+                              mounted) {
+                            final draft = widget.drafts.last;
+                            open(draft.request, draft.template, draft.id);
+                          }
+                        },
+                  child: Text(
+                    t(
+                      'آخری ڈرافٹ بحال کریں',
+                      'पिछला ड्राफ़्ट लौटाएँ',
+                      'Restore last draft',
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+
+  Widget toggle(String title, bool value, ValueChanged<bool> assign) =>
+      SwitchListTile(
+        title: Text(title),
+        value: value,
+        onChanged: busy ? null : (value) => mutate(() => assign(value)),
+      );
+
+  Widget input(String field) {
+    final phone = ['primary', 'secondary', 'dial'].contains(field);
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: TextFormField(
+        controller: controllers[field],
+        enabled: !busy,
+        decoration: InputDecoration(
+          labelText: label(l, field),
+          border: const OutlineInputBorder(),
+        ),
+        maxLines: field == 'address' || field == 'note' ? 2 : 1,
+        maxLength: phone ? 32 : 180,
+        keyboardType: phone ? TextInputType.phone : TextInputType.text,
+        textDirection: phone ? TextDirection.ltr : null,
+        onChanged: (_) => mutate(() {}),
+        validator: (value) {
+          if (!requiredFields.contains(field)) return null;
+          if (value == null || value.trim().isEmpty)
+            return t(
+              'یہ خانہ لازمی ہے',
+              'यह जानकारी आवश्यक है',
+              'This field is required',
+            );
+          if (phone && !validPhone(value))
+            return t(
+              'درست فون نمبر درج کریں',
+              'सही फ़ोन नंबर डालें',
+              'Enter a valid phone number',
+            );
+          return null;
+        },
+      ),
+    );
+  }
+
+  Future<void> gallery() async {
+    final selected = await showModalBottomSheet<int>(
+      isScrollControlled: true,
+      showDragHandle: true,
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, refresh) => SafeArea(
+          child: SizedBox(
+            height: MediaQuery.sizeOf(context).height * .75,
+            child: GridView.builder(
+              padding: const EdgeInsets.all(12),
+              itemCount: designs.length,
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 330,
+                childAspectRatio: 1.43,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+              ),
+              itemBuilder: (context, index) => Card(
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => Navigator.pop(context, index),
+                        child: Center(child: poster(request, index)),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(context, index),
+                            child: Text(
+                              designs[index].name(l),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: t('پسندیدہ', 'पसंदीदा', 'Favorite'),
+                          icon: Icon(
+                            widget.favorites.contains(index)
+                                ? Icons.favorite
+                                : Icons.favorite_outline,
+                          ),
+                          onPressed: () async {
+                            await run(() async {
+                              final wasFavorite = widget.favorites.remove(
+                                index,
+                              );
+                              if (!wasFavorite) widget.favorites.add(index);
+                              try {
+                                await widget.persist();
+                              } on Object {
+                                if (wasFavorite) {
+                                  widget.favorites.add(index);
+                                } else {
+                                  widget.favorites.remove(index);
+                                }
+                                rethrow;
+                              }
+                            });
+                            if (context.mounted) refresh(() {});
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    if (selected != null && mounted) setDesign(selected);
+  }
+
+  Future<void> saveDraft() async {
+    final id = draftId ?? DateTime.now().microsecondsSinceEpoch.toString();
+    final replacement = PosterDraft(id, request, design);
+    final original = widget.drafts.toList();
+    widget.drafts
+      ..removeWhere((draft) => draft.id == id)
+      ..add(replacement);
+    try {
+      await widget.persist();
+    } on Object {
+      widget.drafts
+        ..clear()
+        ..addAll(original);
+      rethrow;
+    }
+    if (mounted)
+      setState(() {
+        draftId = id;
+        dirty = false;
+      });
+    notice(t('ڈرافٹ محفوظ ہوگیا', 'ड्राफ़्ट सहेजा गया', 'Draft saved'));
+  }
+
+  Future<void> removeDrafts([String? id]) async {
+    if (!await confirm(
+      t(
+        'منتخب ڈرافٹس حذف کریں؟',
+        'चुने हुए ड्राफ़्ट हटाएँ?',
+        'Delete the selected drafts?',
+      ),
+    ))
+      return;
+    if (!mounted) return;
+    await run(() async {
+      final original = widget.drafts.toList();
+      widget.drafts.removeWhere((draft) => id == null || draft.id == id);
+      try {
+        await widget.persist();
+      } on Object {
+        widget.drafts
+          ..clear()
+          ..addAll(original);
+        rethrow;
+      }
+      if (mounted && (id == null || id == draftId))
+        setState(() => draftId = null);
+    });
+  }
+
+  Future<void> exportDialog() async {
+    if (!(form.currentState?.validate() ?? false)) {
+      notice(
+        t(
+          'تمام لازمی تفصیلات درست کریں۔',
+          'सभी आवश्यक जानकारियाँ ठीक करें।',
+          'Check all required details.',
+        ),
+      );
+      return;
+    }
+    if (demo &&
+        !await confirm(
+          t(
+            'یہ فرضی نمونہ ہے۔ جاری رکھیں؟',
+            'यह काल्पनिक नमूना है। जारी रखें?',
+            'This is a fictional example. Continue?',
+          ),
+        ))
+      return;
+    if (!mounted) return;
+    var jpeg = false;
+    var quality = 95.0;
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, update) => SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SwitchListTile(
+                  title: Text(
+                    jpeg ? 'JPEG · 1920 × 1080' : 'PNG · 1920 × 1080',
+                  ),
+                  value: jpeg,
+                  onChanged: (value) => update(() => jpeg = value),
+                ),
+                if (jpeg)
+                  Slider(
+                    value: quality,
+                    min: 60,
+                    max: 100,
+                    divisions: 40,
+                    label: '${quality.round()}%',
+                    onChanged: (value) => update(() => quality = value),
+                  ),
+                ListTile(
+                  leading: const Icon(Icons.save_alt),
+                  title: Text(
+                    t('تصویر محفوظ کریں', 'चित्र सहेजें', 'Save image'),
+                  ),
+                  onTap: () => Navigator.pop(context, 'save'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.share),
+                  title: Text(
+                    t(
+                      'صرف پوسٹر شیئر کریں',
+                      'केवल पोस्टर साझा करें',
+                      'Share poster only',
+                    ),
+                  ),
+                  onTap: () => Navigator.pop(context, 'share'),
+                ),
+                if (appDownloadUrl.isNotEmpty) ...[
+                  ListTile(
+                    leading: const Icon(Icons.link),
+                    title: Text(
+                      t(
+                        'پوسٹر اور لنک شیئر کریں',
+                        'पोस्टर और लिंक साझा करें',
+                        'Share poster + app link',
+                      ),
+                    ),
+                    onTap: () => Navigator.pop(context, 'invite'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.copy),
+                    title: Text(
+                      t(
+                        'ڈاؤن لوڈ پیغام کاپی کریں',
+                        'डाउनलोड संदेश कॉपी करें',
+                        'Copy download message',
+                      ),
+                    ),
+                    onTap: () => Navigator.pop(context, 'copy'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    if (!mounted || action == null) return;
+    await run(() async {
+      if (action == 'copy') {
+        await Clipboard.setData(ClipboardData(text: inviteMessage(l)));
+        notice(t('پیغام کاپی ہوگیا', 'संदेश कॉपी हुआ', 'Message copied'));
+        return;
+      }
+      final image = await PosterPainter(request, l, design).render();
+      final options = ExportOptions(jpeg, quality.round());
+      final List<int> bytes;
+      try {
+        final png = (await image.toByteData(format: ui.ImageByteFormat.png))!
+            .buffer
+            .asUint8List();
+        bytes = !jpeg
+            ? png
+            : (await Device.channel.invokeMethod<Uint8List>('jpeg', {
+                'bytes': png,
+                'quality': options.quality,
+              }))!;
+      } finally {
+        image.dispose();
+      }
+      final payload = SharePayload(
+        options,
+        bytes,
+        action == 'invite' ? inviteMessage(l) : null,
+      );
+      if (action == 'save') {
+        if (await widget.device.save(payload)) {
+          notice(t('تصویر محفوظ ہوگئی', 'चित्र सहेजा गया', 'Image saved'));
+        }
+      } else {
+        await widget.device.share(payload);
+      }
+    });
+  }
+}
