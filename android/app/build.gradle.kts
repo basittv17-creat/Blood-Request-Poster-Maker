@@ -1,13 +1,36 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val signingFile = rootProject.file("key.properties")
+val releaseKeys = Properties().apply {
+    if (signingFile.isFile) signingFile.inputStream().use { load(it) }
+}
+
 android {
     namespace = "org.basittv.blood_request"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+
+    if (signingFile.isFile) {
+        signingConfigs {
+            create("ownerRelease") {
+                storeFile = rootProject.file(requireNotNull(releaseKeys.getProperty("storeFile")))
+                storePassword = requireNotNull(releaseKeys.getProperty("storePassword"))
+                keyAlias = requireNotNull(releaseKeys.getProperty("keyAlias"))
+                keyPassword = requireNotNull(releaseKeys.getProperty("keyPassword"))
+            }
+        }
+        buildTypes {
+            release {
+                signingConfig = signingConfigs.getByName("ownerRelease")
+            }
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

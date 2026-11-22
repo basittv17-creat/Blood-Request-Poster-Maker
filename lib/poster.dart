@@ -261,7 +261,31 @@ class PosterPainter extends CustomPainter {
       17,
       gold,
     );
-    if (request.illustration && !center) {
+    if (request.illustration && template == 0) {
+      final x = badgeX;
+      final y = badge.top - 63;
+      box(Rect.fromLTWH(x - 17, y - 3, 34, 11), gold, 4);
+      box(Rect.fromLTWH(x - 41, y + 4, 82, 59), gold, 12);
+      box(Rect.fromLTWH(x - 37, y + 8, 74, 51), red, 9);
+      box(Rect.fromLTWH(x - 14, y + 17, 28, 29), paper, 6);
+      box(Rect.fromLTWH(x - 3, y + 23, 6, 17), red, 2);
+      box(Rect.fromLTWH(x - 8, y + 28, 16, 6), red, 2);
+
+      final armY = badge.bottom + 27;
+      final arm = Path()
+        ..moveTo(x - 91, armY - 8)
+        ..quadraticBezierTo(x - 67, armY - 16, x - 44, armY - 9)
+        ..lineTo(x + 25, armY + 1)
+        ..quadraticBezierTo(x + 41, armY - 9, x + 64, armY - 12)
+        ..quadraticBezierTo(x + 82, armY - 7, x + 70, armY - 1)
+        ..lineTo(x + 43, armY + 11)
+        ..quadraticBezierTo(x + 30, armY + 19, x + 11, armY + 17)
+        ..lineTo(x - 89, armY + 16)
+        ..close();
+      canvas.drawPath(arm, Paint()..color = const Color(0xffeab7a8));
+      box(Rect.fromLTWH(x - 91, armY - 9, 37, 27), red, 6);
+      box(Rect.fromLTWH(x + 2, armY - 1, 14, 8), paper, 3);
+    } else if (request.illustration && !center) {
       final x = badgeX;
       final y = badge.top - 31;
       final drop = Path()
@@ -337,7 +361,7 @@ class PosterPainter extends CustomPainter {
         .where((key) => request[key].isNotEmpty)
         .map((key) => '${label(language, key)}: ${request[key]}')
         .join('  •  ');
-    text(detail, const Rect.fromLTWH(38, 380, 884, 40), 15, ink, lines: 2);
+    text(detail, const Rect.fromLTWH(38, 389, 884, 27), 15, ink, lines: 2);
 
     final contact = language.t(
       'براہِ کرم رابطہ کریں',
