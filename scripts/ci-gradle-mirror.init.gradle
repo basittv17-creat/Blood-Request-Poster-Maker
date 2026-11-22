@@ -1,0 +1,19 @@
+// Prefer the public Maven Central mirror on CI when Central rate-limits runners.
+def centralMirror = 'https://maven-central.storage-download.googleapis.com/maven2'
+
+gradle.beforeSettings { settings ->
+    settings.pluginManagement.repositories {
+        maven { url = uri(centralMirror) }
+        google()
+        gradlePluginPortal()
+    }
+    settings.dependencyResolutionManagement.repositories {
+        maven { url = uri(centralMirror) }
+    }
+}
+
+gradle.beforeProject { project ->
+    if (project.rootProject.projectDir.name == 'android') {
+        project.repositories.maven { url = uri(centralMirror) }
+    }
+}
