@@ -1,4 +1,4 @@
-name: Build single Android APK
+name: Build one optimized Android test APK
 
 on:
   push:
@@ -33,14 +33,18 @@ jobs:
           dart format --output=none --set-exit-if-changed lib test integration_test
           flutter analyze
           flutter test
-      - name: Generate exactly one installable test APK
+      - name: Generate one optimized installable APK (test signing only)
         run: |
-          flutter build apk --debug
+          flutter build apk --release
           mkdir -p dist
-          cp build/app/outputs/flutter-apk/app-debug.apk dist/Blood-Request-Poster-Maker.apk
+          cp build/app/outputs/flutter-apk/app-release.apk dist/Blood-Request-Poster-Maker.apk
           test "$(find dist -maxdepth 1 -type f | wc -l)" -eq 1
           test -s dist/Blood-Request-Poster-Maker.apk
-      - name: Upload single APK only
+          echo "APK size:"
+          du -h dist/Blood-Request-Poster-Maker.apk
+          echo "APK SHA-256:"
+          sha256sum dist/Blood-Request-Poster-Maker.apk
+      - name: Upload exactly one APK (GitHub wraps artifacts in ZIP)
         uses: actions/upload-artifact@v6
         with:
           name: Blood-Request-Poster-Maker-APK
