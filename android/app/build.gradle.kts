@@ -25,9 +25,14 @@ android {
                 keyPassword = requireNotNull(releaseKeys.getProperty("keyPassword"))
             }
         }
-        buildTypes {
-            release {
-                signingConfig = signingConfigs.getByName("ownerRelease")
+    }
+    buildTypes {
+        release {
+            // Installable testing APK, not a production release signature.
+            signingConfig = if (signingFile.isFile) {
+                signingConfigs.getByName("ownerRelease")
+            } else {
+                signingConfigs.getByName("debug")
             }
         }
     }
