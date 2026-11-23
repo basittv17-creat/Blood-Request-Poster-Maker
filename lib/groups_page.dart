@@ -52,7 +52,7 @@ class _GroupsPageState extends State<GroupsPage> {
     builder: (context, snapshot) {
       final store = snapshot.data;
       return PopScope(
-        canPop: !busy && !signedIn,
+        canPop: !widget.admin || (!busy && !signedIn),
         onPopInvokedWithResult: (didPop, _) {
           if (!didPop && signedIn && !busy && store != null) {
             run(() async {
