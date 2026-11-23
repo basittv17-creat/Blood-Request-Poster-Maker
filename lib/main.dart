@@ -461,50 +461,18 @@ class _WorkspaceState extends State<Workspace> {
   Widget home() => ListView(
     padding: const EdgeInsets.all(20),
     children: [
-      Card(
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            poster(PosterRequest.sample, 0),
-            Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    t(
-                      'خون کی درخواست کا پوسٹر بنائیں',
-                      'रक्त अनुरोध का पोस्टर बनाएँ',
-                      'Create a blood request poster',
-                    ),
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 12),
-                  FilledButton.icon(
-                    onPressed: busy ? null : open,
-                    icon: const Icon(Icons.add),
-                    label: Text(
-                      t(
-                        'درخواست کا پوسٹر بنائیں',
-                        'अनुरोध का पोस्टर बनाएँ',
-                        'Generate Request Poster',
-                      ),
-                    ),
-                  ),
-                  OutlinedButton(
-                    onPressed: busy ? null : () => open(PosterRequest.sample),
-                    child: Text(
-                      t('نمونہ دیکھیں', 'नमूना देखें', 'Open example'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+      FilledButton.icon(
+        onPressed: busy ? null : open,
+        icon: const Icon(Icons.add),
+        label: Text(
+          t(
+            'درخواست کا پوسٹر بنائیں',
+            'अनुरोध का पोस्टर बनाएँ',
+            'Generate Request Poster',
+          ),
         ),
       ),
-      const SizedBox(height: 12),
+      const SizedBox(height: 8),
       OutlinedButton.icon(
         onPressed: busy ? null : () => showGroups(),
         icon: const Icon(Icons.groups_outlined),
@@ -514,6 +482,23 @@ class _WorkspaceState extends State<Workspace> {
             'व्हाट्सऐप रक्तदान समूहों से जुड़ें',
             'Join WhatsApp Donation Groups',
           ),
+        ),
+      ),
+      const SizedBox(height: 16),
+      Card(
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            poster(PosterRequest.sample, 0),
+            Padding(
+              padding: const EdgeInsets.all(18),
+              child: OutlinedButton(
+                onPressed: busy ? null : () => open(PosterRequest.sample),
+                child: Text(t('نمونہ دیکھیں', 'नमूना देखें', 'Open example')),
+              ),
+            ),
+          ],
         ),
       ),
       const SizedBox(height: 20),
