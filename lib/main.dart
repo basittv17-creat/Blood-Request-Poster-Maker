@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
+import 'groups_page.dart';
 import 'model.dart';
 import 'platform.dart';
 import 'poster.dart';
@@ -342,37 +343,57 @@ class _WorkspaceState extends State<Workspace> {
         if (!didPop && editing) leave();
       },
       child: Scaffold(
-        appBar: AppBar(
-          leading: editing ? BackButton(onPressed: leave) : null,
-          title: Text(
-            editing
-                ? t('پوسٹر بنائیں', 'पोस्टर बनाएँ', 'Create poster')
-                : title,
-          ),
-          actions: [
-            PopupMenuButton<String>(
-              enabled: !busy,
-              onSelected: (value) {
-                if (value == 'language') languagePicker();
-                if (value == 'privacy') showInfo(true);
-                if (value == 'help') showInfo(false);
-              },
-              itemBuilder: (_) => [
-                PopupMenuItem(
-                  value: 'language',
-                  child: Text(t('زبان', 'भाषा', 'Language')),
-                ),
-                PopupMenuItem(
-                  value: 'privacy',
-                  child: Text(t('رازداری', 'गोपनीयता', 'Privacy')),
-                ),
-                PopupMenuItem(
-                  value: 'help',
-                  child: Text(t('مدد', 'सहायता', 'Help')),
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: Directionality(
+            textDirection: editing || l.rtl == false
+                ? Directionality.of(context)
+                : TextDirection.ltr,
+            child: AppBar(
+              leading: editing ? BackButton(onPressed: leave) : null,
+              title: Text(
+                editing
+                    ? t('پوسٹر بنائیں', 'पोस्टर बनाएँ', 'Create poster')
+                    : title,
+              ),
+              actions: [
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert),
+                  enabled: !busy,
+                  onSelected: (value) {
+                    if (value == 'language') languagePicker();
+                    if (value == 'privacy') showInfo(true);
+                    if (value == 'help') showInfo(false);
+                    if (value == 'admin') showGroups(admin: true);
+                  },
+                  itemBuilder: (_) => [
+                    if (!editing)
+                      PopupMenuItem(
+                        value: 'admin',
+                        child: Text(
+                          t('ایڈمن', 'एडमिन', 'Admin'),
+                          textDirection: l.rtl
+                              ? TextDirection.rtl
+                              : TextDirection.ltr,
+                        ),
+                      ),
+                    PopupMenuItem(
+                      value: 'language',
+                      child: Text(t('زبان', 'भाषा', 'Language')),
+                    ),
+                    PopupMenuItem(
+                      value: 'privacy',
+                      child: Text(t('رازداری', 'गोपनीयता', 'Privacy')),
+                    ),
+                    PopupMenuItem(
+                      value: 'help',
+                      child: Text(t('مدد', 'सहायता', 'Help')),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
         body: SafeArea(
           child: Center(
@@ -431,6 +452,12 @@ class _WorkspaceState extends State<Workspace> {
     ),
   );
 
+  void showGroups({bool admin = false}) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => GroupsPage(l, admin: admin)),
+    );
+  }
+
   Widget home() => ListView(
     padding: const EdgeInsets.all(20),
     children: [
@@ -457,7 +484,13 @@ class _WorkspaceState extends State<Workspace> {
                   FilledButton.icon(
                     onPressed: busy ? null : open,
                     icon: const Icon(Icons.add),
-                    label: Text(t('نیا پوسٹر', 'नया पोस्टर', 'New poster')),
+                    label: Text(
+                      t(
+                        'درخواست کا پوسٹر بنائیں',
+                        'अनुरोध का पोस्टर बनाएँ',
+                        'Generate Request Poster',
+                      ),
+                    ),
                   ),
                   OutlinedButton(
                     onPressed: busy ? null : () => open(PosterRequest.sample),
@@ -469,6 +502,18 @@ class _WorkspaceState extends State<Workspace> {
               ),
             ),
           ],
+        ),
+      ),
+      const SizedBox(height: 12),
+      OutlinedButton.icon(
+        onPressed: busy ? null : () => showGroups(),
+        icon: const Icon(Icons.groups_outlined),
+        label: Text(
+          t(
+            'واٹس ایپ عطیہ گروپس میں شامل ہوں',
+            'व्हाट्सऐप रक्तदान समूहों से जुड़ें',
+            'Join WhatsApp Donation Groups',
+          ),
         ),
       ),
       const SizedBox(height: 20),

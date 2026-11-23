@@ -1,4 +1,4 @@
-name: Build one optimized Android test APK
+name: Android verification
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  build-single-apk:
+  verify:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -29,26 +29,51 @@ jobs:
           cp scripts/ci-gradle-mirror.init.gradle ~/.gradle/init.d/
       - name: Verify Flutter source and tests
         run: |
-          flutter pub get
+          flutter pub get --enforce-lockfile
           dart format --output=none --set-exit-if-changed lib test integration_test
           flutter analyze
           flutter test
-      - name: Generate one optimized installable APK (test signing only)
+      - name: Compile Android test build
+        env:
+          FIREBASE_API_KEY: ${{ vars.FIREBASE_API_KEY }}
+          FIREBASE_APP_ID: ${{ vars.FIREBASE_APP_ID }}
+          FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+          FIREBASE_SENDER_ID: ${{ vars.FIREBASE_SENDER_ID }}
         run: |
-          flutter build apk --release
-          mkdir -p dist
-          cp build/app/outputs/flutter-apk/app-release.apk dist/Blood-Request-Poster-Maker.apk
-          test "$(find dist -maxdepth 1 -type f | wc -l)" -eq 1
-          test -s dist/Blood-Request-Poster-Maker.apk
-          echo "APK size:"
-          du -h dist/Blood-Request-Poster-Maker.apk
-          echo "APK SHA-256:"
-          sha256sum dist/Blood-Request-Poster-Maker.apk
-      - name: Upload exactly one APK (GitHub wraps artifacts in ZIP)
-        uses: actions/upload-artifact@v6
+          flutter build apk --debug --no-pub \
+            --dart-define="FIREBASE_API_KEY=$FIREBASE_API_KEY" \
+            --dart-define="FIREBASE_APP_ID=$FIREBASE_APP_ID" \
+            --dart-define="FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID" \
+            --dart-define="FIREBASE_SENDER_ID=$FIREBASE_SENDER_ID"
+
+  offline-device-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
         with:
-          name: Blood-Request-Poster-Maker-APK
-          path: dist/Blood-Request-Poster-Maker.apk
-          if-no-files-found: error
-          retention-days: 14
-          compression-level: 0
+          distribution: temurin
+          java-version: '21'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.50.1'
+          channel: stable
+          cache: true
+      - name: Configure Maven Central mirror
+        run: |
+          mkdir -p ~/.gradle/init.d
+          cp scripts/ci-gradle-mirror.init.gradle ~/.gradle/init.d/
+      - run: flutter pub get --enforce-lockfile
+      - name: Enable KVM access
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' |
+            sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          disable-animations: true
+          script: bash scripts/emulator-test.sh

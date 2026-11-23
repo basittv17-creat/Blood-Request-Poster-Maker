@@ -21,7 +21,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('English'));
     await tester.pumpAndSettle();
-    expect(find.text('New poster'), findsOneWidget);
+    expect(find.text('Generate Request Poster'), findsOneWidget);
     await tester.tap(find.byType(PopupMenuButton<String>));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Language'));
@@ -29,7 +29,7 @@ void main() {
     await tester.tap(find.text('اردو'));
     await tester.pumpAndSettle();
     expect(
-      Directionality.of(tester.element(find.text('نیا پوسٹر'))),
+      Directionality.of(tester.element(find.text('درخواست کا پوسٹر بنائیں'))),
       TextDirection.rtl,
     );
     expect((await device.read())['language'], 'ur');

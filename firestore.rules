@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function admin() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider == 'password'
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function validGroup() {
+      let group = request.resource.data;
+      return group.keys().hasAll(['name', 'invite'])
+        && group.keys().hasOnly(['name', 'invite'])
+        && group.name is string
+        && group.name.size() >= 1 && group.name.size() <= 80
+        && group.invite is string
+        && group.invite.matches('https://chat[.]whatsapp[.]com/[A-Za-z0-9]{22}');
+    }
+
+    match /admins/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid && admin();
+    }
+
+    match /donationGroups/{id} {
+      allow read: if true;
+      allow create, update: if admin() && validGroup();
+      allow delete: if admin();
+    }
+
+    match /groupRequests/{uid} {
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.auth.token.firebase.sign_in_provider == 'anonymous'
+        && validGroup();
+      allow read, delete: if admin();
+    }
+  }
+}
