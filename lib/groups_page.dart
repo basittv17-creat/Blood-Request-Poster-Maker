@@ -291,7 +291,7 @@ class _GroupsPageState extends State<GroupsPage> {
                                 ),
                                 if (invite != null) ...[
                                   const SizedBox(height: 4),
-                                  const Directionality(
+                                  Directionality(
                                     textDirection: TextDirection.ltr,
                                     child: Text(
                                       'chat.whatsapp.com',

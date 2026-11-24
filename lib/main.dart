@@ -508,288 +508,287 @@ class _WorkspaceState extends State<Workspace> {
   Widget home() {
     final colors = Theme.of(context).colorScheme;
     return ListView(
-    padding: const EdgeInsets.fromLTRB(18, 14, 18, 28),
-    children: [
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: colors.primaryContainer,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Icon(
-              Icons.bloodtype_rounded,
-              size: 38,
-              color: colors.primary,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _appName,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: colors.primary,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  t(
-                    'خون کی درخواست • عطیہ دہندگان تلاش کریں • زندگیاں بچائیں',
-                    'रक्त अनुरोध • दाता खोजें • जीवन बचाएँ',
-                    'Request Blood • Find Donors • Save Lives',
-                  ),
-                  style: Theme.of(context).textTheme.bodySmall
-                      ?.copyWith(color: colors.onSurfaceVariant, height: 1.35),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 24),
-      SizedBox(
-        height: 66,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                colors.primary,
-                colors.primary.withValues(alpha: .82),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(22),
-            boxShadow: [
-              BoxShadow(
-                color: colors.primary.withValues(alpha: .18),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 28),
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: colors.primaryContainer,
+                borderRadius: BorderRadius.circular(18),
               ),
-            ],
+              child: Icon(
+                Icons.bloodtype_rounded,
+                size: 38,
+                color: colors.primary,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _appName,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: colors.primary,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    t(
+                      'خون کی درخواست • عطیہ دہندگان تلاش کریں • زندگیاں بچائیں',
+                      'रक्त अनुरोध • दाता खोजें • जीवन बचाएँ',
+                      'Request Blood • Find Donors • Save Lives',
+                    ),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          height: 66,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [colors.primary, colors.primary.withValues(alpha: .82)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: colors.primary.withValues(alpha: .18),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                foregroundColor: colors.onPrimary,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(22),
+                ),
+              ),
+              onPressed: busy ? null : open,
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: colors.onPrimary.withValues(alpha: .18),
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                    child: const Icon(Icons.add, size: 29),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      t(
+                        'درخواست کا پوسٹر بنائیں',
+                        'अनुरोध का पोस्टर बनाएँ',
+                        'Generate Request Poster',
+                      ),
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_rounded, size: 25),
+                ],
+              ),
+            ),
           ),
-          child: FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              foregroundColor: colors.onPrimary,
-              shadowColor: Colors.transparent,
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 62,
+          child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: colors.primary,
+              side: BorderSide(color: colors.primary, width: 1.3),
+              backgroundColor: colors.surface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(22),
               ),
             ),
-            onPressed: busy ? null : open,
+            onPressed: busy ? null : () => showGroups(),
             child: Row(
               children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: colors.onPrimary.withValues(alpha: .18),
-                    borderRadius: BorderRadius.circular(13),
-                  ),
-                  child: const Icon(Icons.add, size: 29),
-                ),
+                const Icon(Icons.groups_rounded, size: 27),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
                     t(
-                      'درخواست کا پوسٹر بنائیں',
-                      'अनुरोध का पोस्टर बनाएँ',
-                      'Generate Request Poster',
+                      'واٹس ایپ عطیہ گروپس میں شامل ہوں',
+                      'व्हाट्सऐप रक्तदान समूहों से जुड़ें',
+                      'Join WhatsApp Donation Groups',
                     ),
                     style: const TextStyle(
-                      fontSize: 17,
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
-                const Icon(Icons.arrow_forward_rounded, size: 25),
+                const Icon(Icons.arrow_forward_rounded),
               ],
             ),
           ),
         ),
-      ),
-      const SizedBox(height: 12),
-      SizedBox(
-        height: 62,
-        child: OutlinedButton(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: colors.primary,
-            side: BorderSide(color: colors.primary, width: 1.3),
-            backgroundColor: colors.surface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(22),
-            ),
-          ),
-          onPressed: busy ? null : () => showGroups(),
-          child: Row(
-            children: [
-              const Icon(Icons.groups_rounded, size: 27),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text(
-                  t(
-                    'واٹس ایپ عطیہ گروپس میں شامل ہوں',
-                    'व्हाट्सऐप रक्तदान समूहों से जुड़ें',
-                    'Join WhatsApp Donation Groups',
-                  ),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              const Icon(Icons.arrow_forward_rounded),
-            ],
-          ),
-        ),
-      ),
-      const SizedBox(height: 20),
-      Card(
-        color: colors.surface,
-        elevation: 2,
-        shadowColor: colors.primary.withValues(alpha: .08),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: colors.outlineVariant),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(17),
-                child: poster(PosterRequest.sample, 0),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: colors.primary,
-                  side: BorderSide(color: colors.outline),
-                  minimumSize: const Size.fromHeight(52),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                ),
-                onPressed: busy ? null : () => open(PosterRequest.sample),
-                icon: const Icon(Icons.visibility_outlined),
-                label: Text(
-                  t('نمونہ کھولیں', 'नमूना खोलें', 'Open example'),
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      const SizedBox(height: 24),
-      Row(
-        children: [
-          Icon(Icons.layers_rounded, color: colors.primary, size: 28),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              t('میرے ڈرافٹس', 'मेरे ड्राफ़्ट', 'My drafts'),
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: colors.primary,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 10),
-      if (widget.drafts.isEmpty)
-        Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: colors.primaryContainer,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.description_outlined, color: colors.primary),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  t(
-                    'آپ کے محفوظ کردہ ڈرافٹس یہاں دکھائی دیں گے۔',
-                    'आपके सहेजे गए ड्राफ़्ट यहाँ दिखाई देंगे।',
-                    'Your saved drafts will appear here.',
-                  ),
-                  style: TextStyle(color: colors.onSurfaceVariant),
-                ),
-              ),
-            ],
-          ),
-        ),
-      for (final draft in widget.drafts.reversed)
+        const SizedBox(height: 20),
         Card(
           color: colors.surface,
-          elevation: 1,
-          margin: const EdgeInsets.only(bottom: 9),
+          elevation: 2,
+          shadowColor: colors.primary.withValues(alpha: .08),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             side: BorderSide(color: colors.outlineVariant),
           ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 5,
-            ),
-            leading: Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: colors.primaryContainer,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Icon(
-                Icons.description_outlined,
-                color: colors.primary,
-                size: 29,
-              ),
-            ),
-            title: Text(
-              draft.request['patient'].isEmpty
-                  ? designs[draft.template].name(l)
-                  : draft.request['patient'],
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: colors.onSurface,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            subtitle: Text(
-              draft.request['hospital'].isEmpty
-                  ? draft.request['address']
-                  : draft.request['hospital'],
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: colors.onSurfaceVariant),
-            ),
-            onTap: busy
-                ? null
-                : () => open(draft.request, draft.template, draft.id),
-            trailing: IconButton(
-              tooltip: t('ڈرافٹ حذف کریں', 'ड्राफ़्ट हटाएँ', 'Delete draft'),
-              onPressed: busy ? null : () => removeDrafts(draft.id),
-              icon: Icon(Icons.delete_outline, color: colors.primary),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(17),
+                  child: poster(PosterRequest.sample, 0),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colors.primary,
+                    side: BorderSide(color: colors.outline),
+                    minimumSize: const Size.fromHeight(52),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  onPressed: busy ? null : () => open(PosterRequest.sample),
+                  icon: const Icon(Icons.visibility_outlined),
+                  label: Text(
+                    t('نمونہ کھولیں', 'नमूना खोलें', 'Open example'),
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-    ],
+        const SizedBox(height: 24),
+        Row(
+          children: [
+            Icon(Icons.layers_rounded, color: colors.primary, size: 28),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                t('میرے ڈرافٹس', 'मेरे ड्राफ़्ट', 'My drafts'),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: colors.primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (widget.drafts.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: colors.primaryContainer,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.description_outlined, color: colors.primary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    t(
+                      'آپ کے محفوظ کردہ ڈرافٹس یہاں دکھائی دیں گے۔',
+                      'आपके सहेजे गए ड्राफ़्ट यहाँ दिखाई देंगे।',
+                      'Your saved drafts will appear here.',
+                    ),
+                    style: TextStyle(color: colors.onSurfaceVariant),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        for (final draft in widget.drafts.reversed)
+          Card(
+            color: colors.surface,
+            elevation: 1,
+            margin: const EdgeInsets.only(bottom: 9),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(color: colors.outlineVariant),
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 5,
+              ),
+              leading: Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: colors.primaryContainer,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Icon(
+                  Icons.description_outlined,
+                  color: colors.primary,
+                  size: 29,
+                ),
+              ),
+              title: Text(
+                draft.request['patient'].isEmpty
+                    ? designs[draft.template].name(l)
+                    : draft.request['patient'],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: colors.onSurface,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              subtitle: Text(
+                draft.request['hospital'].isEmpty
+                    ? draft.request['address']
+                    : draft.request['hospital'],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: colors.onSurfaceVariant),
+              ),
+              onTap: busy
+                  ? null
+                  : () => open(draft.request, draft.template, draft.id),
+              trailing: IconButton(
+                tooltip: t('ڈرافٹ حذف کریں', 'ड्राफ़्ट हटाएँ', 'Delete draft'),
+                onPressed: busy ? null : () => removeDrafts(draft.id),
+                icon: Icon(Icons.delete_outline, color: colors.primary),
+              ),
+            ),
+          ),
+      ],
     );
   }
 

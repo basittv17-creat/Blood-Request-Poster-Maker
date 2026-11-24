@@ -71,5 +71,4 @@ void main() {
     expect(find.text('واٹس ایپ عطیہ گروپس میں شامل ہوں'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
-
 }
