@@ -96,6 +96,16 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       # Let Flutter regenerate the release registrant without dev-only plugins.
       - run: flutter build apk --release
+      - name: Verify packaged launcher identity
+        run: |
+          aapt="$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)"
+          "$aapt" dump badging build/app/outputs/flutter-apk/app-release.apk > apk-badging.txt
+          grep -F "package: name='com.awasigogera.blood'" apk-badging.txt
+          grep -Fx "application-label:'Blood Request'" apk-badging.txt
+          grep -F "launchable-activity: name='com.awasigogera.blood.MainActivity'" apk-badging.txt
+          for density in 160 240 320 480 640; do
+            grep -E "^application-icon-${density}:" apk-badging.txt
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: blood-request-poster-maker-test-apk

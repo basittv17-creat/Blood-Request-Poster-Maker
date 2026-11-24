@@ -3,11 +3,15 @@ import 'dart:ui' as ui;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'groups_page.dart';
 import 'model.dart';
 import 'platform.dart';
 import 'poster.dart';
+
+const _appName = 'Blood Request';
+const _site = 'https://basittv17-creat.github.io/Blood-Request-Poster-Maker';
 
 void main() => runApp(const BloodRequestApp());
 
@@ -82,8 +86,7 @@ class _BloodRequestAppState extends State<BloodRequestApp> {
     );
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      onGenerateTitle: (_) =>
-          language.t('ضرورتِ خون', 'रक्त अनुरोध', 'Blood Request'),
+      title: _appName,
       supportedLocales: const [Locale('ur'), Locale('hi'), Locale('en')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       locale: Locale(language.name),
@@ -155,7 +158,6 @@ class _WorkspaceState extends State<Workspace> {
 
   Language get l => widget.language;
   String t(String ur, String hi, String en) => l.t(ur, hi, en);
-  String get title => t('ضرورتِ خون', 'रक्त अनुरोध', 'Blood Request');
   String get cancel => t('منسوخ', 'रद्द करें', 'Cancel');
   String get done => t('تصدیق کریں', 'पुष्टि करें', 'Confirm');
 
@@ -354,7 +356,7 @@ class _WorkspaceState extends State<Workspace> {
               title: Text(
                 editing
                     ? t('پوسٹر بنائیں', 'पोस्टर बनाएँ', 'Create poster')
-                    : title,
+                    : _appName,
               ),
               actions: [
                 PopupMenuButton<String>(
@@ -430,6 +432,14 @@ class _WorkspaceState extends State<Workspace> {
               ),
       ),
       actions: [
+        TextButton(
+          onPressed: () => openInfoPage(privacy),
+          child: Text(
+            privacy
+                ? t('رازداری کی پالیسی', 'गोपनीयता नीति', 'Privacy Policy')
+                : t('رابطہ کریں', 'संपर्क करें', 'Contact Support'),
+          ),
+        ),
         if (privacy)
           TextButton(
             onPressed: () {
@@ -451,6 +461,32 @@ class _WorkspaceState extends State<Workspace> {
       ],
     ),
   );
+
+  Future<void> openInfoPage(bool privacy) async {
+    final page = privacy ? 'privacy' : 'support';
+    try {
+      if (await launchUrl(
+        Uri.parse('$_site/$page/'),
+        mode: LaunchMode.externalApplication,
+      )) {
+        return;
+      }
+    } on PlatformException {
+      // The device may have no browser available.
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          t(
+            'صفحہ نہیں کھل سکا۔',
+            'पेज नहीं खुल सका।',
+            'Could not open the page.',
+          ),
+        ),
+      ),
+    );
+  }
 
   void showGroups({bool admin = false}) {
     Navigator.of(context).push(

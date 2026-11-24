@@ -1,7 +1,5 @@
-# ضرورتِ خون · Blood Request Poster Maker
+# Blood Request
 
-An offline Android app for creating 1920 × 1080 blood request posters. The app supports Urdu, Hindi, and English, has twelve designs, and saves drafts on the device. It exports PNG or JPEG and opens the Android Sharesheet when asked.
+Create 1920 × 1080 blood request posters on Android in Urdu, Hindi, or English. Choose from twelve designs, save drafts on your device, and export PNG or JPEG files or share them through Android. Poster creation works offline. The moderated WhatsApp donation-group directory requires a connection.
 
-ضرورتِ خون ایک آف لائن اینڈرائیڈ ایپ ہے۔ اردو، ہندی یا انگلش منتخب کریں، مریض اور ہسپتال کی تفصیلات درج کریں، پھر پوسٹر محفوظ یا شیئر کریں۔
-
-See [Getting started](GETTING_STARTED.md), [Privacy](PRIVACY.md), and [Work progress](WORK_PROGRESS.md).
+[Getting started](GETTING_STARTED.md) · [Privacy Policy](https://basittv17-creat.github.io/Blood-Request-Poster-Maker/privacy/) · [Support](https://basittv17-creat.github.io/Blood-Request-Poster-Maker/support/)
