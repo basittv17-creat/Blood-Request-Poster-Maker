@@ -64,7 +64,11 @@ class _GroupsPageState extends State<GroupsPage> {
           }
         },
         child: Scaffold(
+          backgroundColor: const Color(0xfffff7f5),
           appBar: AppBar(
+            backgroundColor: const Color(0xfffff7f5),
+            foregroundColor: const Color(0xff78152a),
+            elevation: 0,
             title: Text(
               widget.admin
                   ? t('ایڈمن', 'एडमिन', 'Admin')
@@ -239,7 +243,7 @@ class _GroupsPageState extends State<GroupsPage> {
                 );
               }
               return ListView.builder(
-                padding: const EdgeInsets.only(bottom: 88),
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 104),
                 itemCount: documents.length,
                 itemBuilder: (context, index) {
                   final document = documents[index];
@@ -248,73 +252,137 @@ class _GroupsPageState extends State<GroupsPage> {
                   final invite = canonicalInvite(
                     data['invite'] as String? ?? '',
                   );
-                  return ListTile(
-                    title: Text(name),
-                    subtitle: invite != null
-                        ? Text(invite, textDirection: TextDirection.ltr)
-                        : null,
-                    trailing: widget.admin
-                        ? PopupMenuButton<String>(
-                            enabled: !busy,
-                            onSelected: (action) async {
-                              switch (action) {
-                                case 'approve':
-                                  await run(
-                                    () => store.approve(document.reference),
-                                  );
-                                case 'edit':
-                                  await editGroup(store, document);
-                                case 'remove':
-                                  await removeGroup(
-                                    document.reference,
-                                    reviewing,
-                                  );
-                              }
-                            },
-                            itemBuilder: (_) => [
-                              if (reviewing)
-                                PopupMenuItem(
-                                  value: 'approve',
-                                  child: Text(
-                                    t('منظور کریں', 'स्वीकार करें', 'Approve'),
-                                  ),
-                                )
-                              else
-                                PopupMenuItem(
-                                  value: 'edit',
-                                  child: Text(
-                                    t('ترمیم', 'संपादित करें', 'Edit'),
-                                  ),
-                                ),
-                              PopupMenuItem(
-                                value: 'remove',
-                                child: Text(
-                                  reviewing
-                                      ? t(
-                                          'مسترد کریں',
-                                          'अस्वीकार करें',
-                                          'Reject',
-                                        )
-                                      : t('حذف کریں', 'हटाएँ', 'Delete'),
-                                ),
-                              ),
-                            ],
-                          )
-                        : FilledButton(
-                            onPressed: invite == null || busy
-                                ? null
-                                : () => run(() async {
-                                    if (!await launchUrl(
-                                      Uri.parse(invite),
-                                      mode: LaunchMode.externalApplication,
-                                    )) {
-                                      throw StateError(
-                                        'No application opened the invite',
-                                      );
-                                    }
-                                  }),
-                            child: Text(t('شامل ہوں', 'जुड़ें', 'Join')),
+                  return Card(
+                    color: Colors.white,
+                    elevation: 1.5,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(22),
+                      side: const BorderSide(color: Color(0xffffe7e9)),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(15, 14, 10, 14),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: const Color(0xfffbe7e8),
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: const Icon(
+                              Icons.groups_rounded,
+                              color: Color(0xffa01639),
+                              size: 26,
+                            ),
                           ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  name,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Color(0xff321b20),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                if (invite != null) ...[
+                                  const SizedBox(height: 4),
+                                  const Directionality(
+                                    textDirection: TextDirection.ltr,
+                                    child: Text(
+                                      'chat.whatsapp.com',
+                                      style: TextStyle(
+                                        color: Color(0xff75666a),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 10),
+                                if (!widget.admin)
+                                  FilledButton.icon(
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: const Color(0xffa01639),
+                                      foregroundColor: Colors.white,
+                                      minimumSize: const Size(0, 42),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                    ),
+                                    onPressed: invite == null || busy
+                                        ? null
+                                        : () => run(() async {
+                                            if (!await launchUrl(
+                                              Uri.parse(invite),
+                                              mode: LaunchMode.externalApplication,
+                                            )) {
+                                              throw StateError(
+                                                'No application opened the invite',
+                                              );
+                                            }
+                                          }),
+                                    icon: const Icon(Icons.chat_rounded, size: 18),
+                                    label: Text(
+                                      t('واٹس ایپ میں شامل ہوں', 'व्हाट्सऐप से जुड़ें', 'Join WhatsApp'),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          if (widget.admin)
+                            PopupMenuButton<String>(
+                              enabled: !busy,
+                              onSelected: (action) async {
+                                switch (action) {
+                                  case 'approve':
+                                    await run(
+                                      () => store.approve(document.reference),
+                                    );
+                                  case 'edit':
+                                    await editGroup(store, document);
+                                  case 'remove':
+                                    await removeGroup(
+                                      document.reference,
+                                      reviewing,
+                                    );
+                                }
+                              },
+                              itemBuilder: (_) => [
+                                if (reviewing)
+                                  PopupMenuItem(
+                                    value: 'approve',
+                                    child: Text(
+                                      t('منظور کریں', 'स्वीकार करें', 'Approve'),
+                                    ),
+                                  )
+                                else
+                                  PopupMenuItem(
+                                    value: 'edit',
+                                    child: Text(
+                                      t('ترمیم', 'संपादित करें', 'Edit'),
+                                    ),
+                                  ),
+                                PopupMenuItem(
+                                  value: 'remove',
+                                  child: Text(
+                                    reviewing
+                                        ? t('مسترد کریں', 'अस्वीकार करें', 'Reject')
+                                        : t('حذف کریں', 'हटाएँ', 'Delete'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
                   );
                 },
               );
