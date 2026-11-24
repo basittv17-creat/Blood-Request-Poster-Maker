@@ -155,7 +155,7 @@ jobs:
 
   signed-aab:
     if: github.ref == 'refs/heads/main' && (inputs.build_signed_aab || (github.event_name == 'push' && contains(github.event.head_commit.message, '[build-signed-aab]')))
-    needs: [verify, offline-device-tests]
+    needs: [format, verify, offline-device-tests]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
