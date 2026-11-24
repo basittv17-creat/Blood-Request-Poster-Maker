@@ -43,10 +43,15 @@ class DonationGroups {
 
   final FirebaseAuth auth;
   final FirebaseFirestore db;
-  late final approvedStream = approved.snapshots();
-  late final pendingStream = pending
-      .snapshots(includeMetadataChanges: true)
-      .where((snapshot) => !snapshot.metadata.isFromCache);
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> watchGroups({
+    required bool reviewing,
+  }) {
+    if (!reviewing) return approved.snapshots();
+    return pending
+        .snapshots(includeMetadataChanges: true)
+        .where((snapshot) => !snapshot.metadata.isFromCache);
+  }
 
   CollectionReference<Map<String, dynamic>> get approved =>
       db.collection('donationGroups');

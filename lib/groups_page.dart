@@ -20,6 +20,8 @@ class _GroupsPageState extends State<GroupsPage> {
   bool signedIn = false;
   bool busy = false;
   bool pending = true;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? approvedGroups;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? pendingRequests;
   String t(String ur, String hi, String en) => widget.language.t(ur, hi, en);
 
   Future<void> run(Future<void> Function() action, {String? success}) async {
@@ -149,7 +151,9 @@ class _GroupsPageState extends State<GroupsPage> {
 
   Widget groupList(DonationGroups store) {
     final reviewing = widget.admin && pending;
-    final collection = reviewing ? store.pending : store.approved;
+    final stream = reviewing
+        ? pendingRequests ??= store.watchGroups(reviewing: true)
+        : approvedGroups ??= store.watchGroups(reviewing: false);
     return Column(
       children: [
         if (widget.admin)
@@ -182,17 +186,34 @@ class _GroupsPageState extends State<GroupsPage> {
           ),
         Expanded(
           child: StreamBuilder(
-            key: ValueKey(collection.path),
-            stream: reviewing ? store.pendingStream : store.approvedStream,
+            key: ObjectKey(stream),
+            stream: stream,
             builder: (context, snapshot) {
               if (snapshot.hasError) {
                 return Center(
-                  child: Text(
-                    t(
-                      'فہرست نہیں کھل سکی۔',
-                      'सूची खुल नहीं सकी।',
-                      'Could not load the list.',
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        t(
+                          'فہرست نہیں کھل سکی۔',
+                          'सूची खुल नहीं सकी।',
+                          'Could not load the list.',
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => setState(() {
+                          if (reviewing) {
+                            pendingRequests = null;
+                          } else {
+                            approvedGroups = null;
+                          }
+                        }),
+                        child: Text(
+                          t('دوبارہ کوشش', 'फिर कोशिश करें', 'Retry'),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               }
