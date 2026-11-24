@@ -44,4 +44,31 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Admin'), findsOneWidget);
   });
+  testWidgets('premium home remains usable on a narrow phone in Urdu', (
+    tester,
+  ) async {
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(Device.channel, (call) async {
+      if (call.method == 'read') return '{}';
+      return null;
+    });
+    addTearDown(() => messenger.setMockMethodCallHandler(Device.channel, null));
+    tester.view.physicalSize = const Size(320, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(const BloodRequestApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('اردو'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Blood Request'), findsOneWidget);
+    expect(find.text('میرے ڈرافٹس'), findsOneWidget);
+    expect(find.text('درخواست کا پوسٹر بنائیں'), findsOneWidget);
+    expect(find.text('واٹس ایپ عطیہ گروپس میں شامل ہوں'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
 }

@@ -505,7 +505,9 @@ class _WorkspaceState extends State<Workspace> {
     );
   }
 
-  Widget home() => ListView(
+  Widget home() {
+    final colors = Theme.of(context).colorScheme;
+    return ListView(
     padding: const EdgeInsets.fromLTRB(18, 14, 18, 28),
     children: [
       Row(
@@ -515,7 +517,7 @@ class _WorkspaceState extends State<Workspace> {
             width: 58,
             height: 58,
             decoration: BoxDecoration(
-              color: const Color(0xfffbe7e8),
+              color: colors.primaryContainer,
               borderRadius: BorderRadius.circular(18),
             ),
             child: const Icon(
@@ -532,7 +534,7 @@ class _WorkspaceState extends State<Workspace> {
                 Text(
                   _appName,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: const Color(0xff78152a),
+                    color: colors.primary,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.5,
                   ),
@@ -545,7 +547,7 @@ class _WorkspaceState extends State<Workspace> {
                     'Request Blood • Find Donors • Save Lives',
                   ),
                   style: Theme.of(context).textTheme.bodySmall
-                      ?.copyWith(color: const Color(0xff75666a), height: 1.35),
+                      ?.copyWith(color: colors.onSurfaceVariant, height: 1.35),
                 ),
               ],
             ),
@@ -565,7 +567,7 @@ class _WorkspaceState extends State<Workspace> {
             borderRadius: BorderRadius.circular(22),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xff78152a).withValues(alpha: .18),
+                color: colors.primary.withValues(alpha: .18),
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
@@ -617,9 +619,9 @@ class _WorkspaceState extends State<Workspace> {
         height: 62,
         child: OutlinedButton(
           style: OutlinedButton.styleFrom(
-            foregroundColor: const Color(0xff78152a),
+            foregroundColor: colors.primary,
             side: const BorderSide(color: Color(0xffa01639), width: 1.3),
-            backgroundColor: Colors.white.withValues(alpha: .68),
+            backgroundColor: colors.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(22),
             ),
@@ -649,9 +651,9 @@ class _WorkspaceState extends State<Workspace> {
       ),
       const SizedBox(height: 20),
       Card(
-        color: Colors.white,
+        color: colors.surface,
         elevation: 2,
-        shadowColor: const Color(0xff78152a).withValues(alpha: .08),
+        shadowColor: colors.primary.withValues(alpha: .08),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
           side: const BorderSide(color: Color(0xffffeeee)),
@@ -669,7 +671,7 @@ class _WorkspaceState extends State<Workspace> {
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xff78152a),
+                  foregroundColor: colors.primary,
                   side: const BorderSide(color: Color(0xffc96c7d)),
                   minimumSize: const Size.fromHeight(52),
                   shape: RoundedRectangleBorder(
@@ -696,7 +698,7 @@ class _WorkspaceState extends State<Workspace> {
             child: Text(
               t('میرے ڈرافٹس', 'मेरे ड्राफ़्ट', 'My drafts'),
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: const Color(0xff78152a),
+                color: colors.primary,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -708,7 +710,7 @@ class _WorkspaceState extends State<Workspace> {
         Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: const Color(0xfffbe7e8),
+            color: colors.primaryContainer,
             borderRadius: BorderRadius.circular(18),
           ),
           child: Row(
@@ -746,7 +748,7 @@ class _WorkspaceState extends State<Workspace> {
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: const Color(0xfffbe7e8),
+                color: colors.primaryContainer,
                 borderRadius: BorderRadius.circular(15),
               ),
               child: const Icon(
@@ -785,7 +787,8 @@ class _WorkspaceState extends State<Workspace> {
           ),
         ),
     ],
-  );
+    );
+  }
 
   Widget poster(PosterRequest data, int index) => Semantics(
     image: true,

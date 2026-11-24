@@ -64,11 +64,7 @@ class _GroupsPageState extends State<GroupsPage> {
           }
         },
         child: Scaffold(
-          backgroundColor: const Color(0xfffff7f5),
           appBar: AppBar(
-            backgroundColor: const Color(0xfffff7f5),
-            foregroundColor: const Color(0xff78152a),
-            elevation: 0,
             title: Text(
               widget.admin
                   ? t('ایڈمن', 'एडमिन', 'Admin')
@@ -154,6 +150,7 @@ class _GroupsPageState extends State<GroupsPage> {
   }
 
   Widget groupList(DonationGroups store) {
+    final colors = Theme.of(context).colorScheme;
     final reviewing = widget.admin && pending;
     final stream = reviewing
         ? pendingRequests ??= store.watchGroups(reviewing: true)
@@ -253,12 +250,12 @@ class _GroupsPageState extends State<GroupsPage> {
                     data['invite'] as String? ?? '',
                   );
                   return Card(
-                    color: Colors.white,
+                    color: colors.surface,
                     elevation: 1.5,
                     margin: const EdgeInsets.only(bottom: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(22),
-                      side: const BorderSide(color: Color(0xffffe7e9)),
+                      side: BorderSide(color: colors.outlineVariant),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(15, 14, 10, 14),
@@ -268,7 +265,7 @@ class _GroupsPageState extends State<GroupsPage> {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: const Color(0xfffbe7e8),
+                              color: colors.primaryContainer,
                               borderRadius: BorderRadius.circular(15),
                             ),
                             child: const Icon(
@@ -309,8 +306,8 @@ class _GroupsPageState extends State<GroupsPage> {
                                 if (!widget.admin)
                                   FilledButton.icon(
                                     style: FilledButton.styleFrom(
-                                      backgroundColor: const Color(0xffa01639),
-                                      foregroundColor: Colors.white,
+                                      backgroundColor: colors.primary,
+                                      foregroundColor: colors.onPrimary,
                                       minimumSize: const Size(0, 42),
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 16,
