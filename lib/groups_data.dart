@@ -23,20 +23,20 @@ class DonationGroups {
   static final _apps = <String, Future<FirebaseApp>>{};
 
   static Future<FirebaseApp> _initialize(String name) async {
-    final app = await Firebase.initializeApp();
-    if (name == 'directory') return app;
+    if (name == 'directory') return Firebase.initializeApp();
+    final app = await _app('directory');
     return Firebase.initializeApp(name: name, options: app.options);
   }
 
+  static Future<FirebaseApp> _app(String name) =>
+      _apps[name] ??= _initialize(name).onError((error, stackTrace) {
+        _apps.remove(name);
+        Error.throwWithStackTrace(error, stackTrace);
+      });
+
   static Future<DonationGroups> connect({required bool admin}) async {
-    final name = admin ? 'moderation' : 'directory';
-    try {
-      final app = await (_apps[name] ??= _initialize(name));
-      return DonationGroups._(app);
-    } catch (_) {
-      _apps.remove(name);
-      rethrow;
-    }
+    final app = await _app(admin ? 'moderation' : 'directory');
+    return DonationGroups._(app);
   }
 
   final FirebaseAuth auth;

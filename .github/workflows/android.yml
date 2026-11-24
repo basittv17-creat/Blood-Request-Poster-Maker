@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      build_test_apk:
+        description: Build and upload one APK for phone testing
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -67,3 +72,31 @@ jobs:
           arch: x86_64
           disable-animations: true
           script: bash scripts/emulator-test.sh
+
+  test-apk:
+    if: inputs.build_test_apk
+    needs: [verify, offline-device-tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.50.1'
+          channel: stable
+          cache: true
+      - name: Configure Maven Central mirror
+        run: |
+          mkdir -p ~/.gradle/init.d
+          cp scripts/ci-gradle-mirror.init.gradle ~/.gradle/init.d/
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter build apk --release --no-pub
+      - uses: actions/upload-artifact@v4
+        with:
+          name: blood-request-poster-maker-test-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error

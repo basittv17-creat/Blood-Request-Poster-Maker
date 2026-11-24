@@ -1,15 +1,15 @@
 # WhatsApp donation groups
 
 Poster editing, drafts, templates, rendering, export, and Android sharing use
-local code. The groups page connects to Firebase only when opened.
+local code. The groups screens use Firebase for the directory and moderation.
 
-1. In Firebase Console, create a project on **Spark**, leave billing disabled,
-   and register the Android application `com.awasigogera.blood`.
-2. Create a Cloud Firestore Standard database in production mode. Deploy the
-   repository rules with `firebase deploy --only firestore:rules --project PROJECT_ID`.
-3. Enable the Anonymous and Email/Password sign-in providers. Create the
-   moderator's Firebase Authentication account in the console. Add a document
-   named with that account's UID to `admins` from the console. The document
+1. In Firebase Console, select the existing `blood-request-poster-maker`
+   project on **Spark** and check that `com.awasigogera.blood` is registered.
+2. In Cloud Firestore Standard, compare the published rules with
+   `firestore.rules`. If they differ, publish the repository rules with
+   `firebase deploy --only firestore:rules --project blood-request-poster-maker`.
+3. Check that Anonymous and Email/Password sign-in are enabled and that the
+   moderator's Firebase Authentication UID has a matching document in `admins`. The document
    can contain `active: true`. Remove the document to revoke moderation
    access. App clients cannot provision roles.
 4. Android builds use `android/app/google-services.json` and select the

@@ -229,7 +229,7 @@ class _GroupsPageState extends State<GroupsPage> {
                   );
                   return ListTile(
                     title: Text(name),
-                    subtitle: widget.admin && invite != null
+                    subtitle: invite != null
                         ? Text(invite, textDirection: TextDirection.ltr)
                         : null,
                     trailing: widget.admin
