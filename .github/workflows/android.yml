@@ -9,6 +9,10 @@ on:
         description: Build and upload one APK for phone testing
         type: boolean
         default: false
+      build_signed_aab:
+        description: Build and upload the signed Google Play App Bundle
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -110,4 +114,40 @@ jobs:
         with:
           name: blood-request-poster-maker-test-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+
+  signed-aab:
+    if: github.ref == 'refs/heads/main' && (inputs.build_signed_aab || (github.event_name == 'push' && contains(github.event.head_commit.message, '[build-signed-aab]')))
+    needs: [verify, offline-device-tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.50.1'
+          channel: stable
+          cache: true
+      - name: Configure Maven Central mirror
+        run: |
+          mkdir -p ~/.gradle/init.d
+          cp scripts/ci-gradle-mirror.init.gradle ~/.gradle/init.d/
+      - run: flutter pub get --enforce-lockfile
+      - name: Build and verify signed release bundle
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: bash scripts/build-signed-aab.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: blood-request-play-signed-aab
+          path: build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error

@@ -7,30 +7,41 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val ciKeystore = providers.environmentVariable("BLOOD_RELEASE_KEYSTORE").orNull
 val signingFile = rootProject.file("key.properties")
 val releaseKeys = Properties().apply {
     if (signingFile.isFile) signingFile.inputStream().use { load(it) }
 }
+
+val useOwnerSigning = ciKeystore != null || signingFile.isFile
 
 android {
     namespace = "com.awasigogera.blood"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
-    if (signingFile.isFile) {
+    if (useOwnerSigning) {
         signingConfigs {
             create("ownerRelease") {
-                storeFile = rootProject.file(requireNotNull(releaseKeys.getProperty("storeFile")))
-                storePassword = requireNotNull(releaseKeys.getProperty("storePassword"))
-                keyAlias = requireNotNull(releaseKeys.getProperty("keyAlias"))
-                keyPassword = requireNotNull(releaseKeys.getProperty("keyPassword"))
+                if (ciKeystore != null) {
+                    storeFile = rootProject.file(ciKeystore)
+                    check(storeFile!!.isFile) { "CI release keystore is missing" }
+                    storePassword = requireNotNull(providers.environmentVariable("KEYSTORE_PASSWORD").orNull)
+                    keyAlias = requireNotNull(providers.environmentVariable("KEY_ALIAS").orNull)
+                    keyPassword = requireNotNull(providers.environmentVariable("KEY_PASSWORD").orNull)
+                } else {
+                    storeFile = rootProject.file(requireNotNull(releaseKeys.getProperty("storeFile")))
+                    storePassword = requireNotNull(releaseKeys.getProperty("storePassword"))
+                    keyAlias = requireNotNull(releaseKeys.getProperty("keyAlias"))
+                    keyPassword = requireNotNull(releaseKeys.getProperty("keyPassword"))
+                }
             }
         }
     }
     buildTypes {
         release {
-            // Installable testing APK, not a production release signature.
-            signingConfig = if (signingFile.isFile) {
+            // The debug key is used only for local and CI phone-testing builds.
+            signingConfig = if (useOwnerSigning) {
                 signingConfigs.getByName("ownerRelease")
             } else {
                 signingConfigs.getByName("debug")
