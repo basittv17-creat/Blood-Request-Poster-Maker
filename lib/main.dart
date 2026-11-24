@@ -520,7 +520,7 @@ class _WorkspaceState extends State<Workspace> {
               color: colors.primaryContainer,
               borderRadius: BorderRadius.circular(18),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.bloodtype_rounded,
               size: 38,
               color: colors.primary,
@@ -559,7 +559,7 @@ class _WorkspaceState extends State<Workspace> {
         height: 66,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               colors: [
                 colors.primary,
                 colors.primary.withValues(alpha: .82),
@@ -754,7 +754,7 @@ class _WorkspaceState extends State<Workspace> {
                 color: colors.primaryContainer,
                 borderRadius: BorderRadius.circular(15),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.description_outlined,
                 color: colors.primary,
                 size: 29,

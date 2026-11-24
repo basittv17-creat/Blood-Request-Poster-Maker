@@ -268,9 +268,9 @@ class _GroupsPageState extends State<GroupsPage> {
                               color: colors.primaryContainer,
                               borderRadius: BorderRadius.circular(15),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.groups_rounded,
-                              color: Color(0xffa01639),
+                              color: colors.primary,
                               size: 26,
                             ),
                           ),
@@ -283,8 +283,8 @@ class _GroupsPageState extends State<GroupsPage> {
                                   name,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: Color(0xff321b20),
+                                  style: TextStyle(
+                                    color: colors.onSurface,
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -296,7 +296,7 @@ class _GroupsPageState extends State<GroupsPage> {
                                     child: Text(
                                       'chat.whatsapp.com',
                                       style: TextStyle(
-                                        color: Color(0xff75666a),
+                                        color: colors.onSurfaceVariant,
                                         fontSize: 12,
                                       ),
                                     ),
