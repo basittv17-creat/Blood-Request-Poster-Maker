@@ -638,7 +638,10 @@ class _WorkspaceState extends State<Workspace> {
                     'व्हाट्सऐप रक्तदान समूहों से जुड़ें',
                     'Join WhatsApp Donation Groups',
                   ),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               const Icon(Icons.arrow_forward_rounded),
@@ -741,7 +744,10 @@ class _WorkspaceState extends State<Workspace> {
             side: const BorderSide(color: Color(0xffffeeee)),
           ),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 5,
+            ),
             leading: Container(
               width: 52,
               height: 52,

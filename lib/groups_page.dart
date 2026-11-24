@@ -312,7 +312,9 @@ class _GroupsPageState extends State<GroupsPage> {
                                       backgroundColor: const Color(0xffa01639),
                                       foregroundColor: Colors.white,
                                       minimumSize: const Size(0, 42),
-                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(14),
                                       ),
@@ -329,9 +331,16 @@ class _GroupsPageState extends State<GroupsPage> {
                                               );
                                             }
                                           }),
-                                    icon: const Icon(Icons.chat_rounded, size: 18),
+                                    icon: const Icon(
+                                      Icons.chat_rounded,
+                                      size: 18,
+                                    ),
                                     label: Text(
-                                      t('واٹس ایپ میں شامل ہوں', 'व्हाट्सऐप से जुड़ें', 'Join WhatsApp'),
+                                      t(
+                                        'واٹس ایپ میں شامل ہوں',
+                                        'व्हाट्सऐप से जुड़ें',
+                                        'Join WhatsApp',
+                                      ),
                                     ),
                                   ),
                               ],
@@ -360,7 +369,11 @@ class _GroupsPageState extends State<GroupsPage> {
                                   PopupMenuItem(
                                     value: 'approve',
                                     child: Text(
-                                      t('منظور کریں', 'स्वीकार करें', 'Approve'),
+                                      t(
+                                        'منظور کریں',
+                                        'स्वीकार करें',
+                                        'Approve',
+                                      ),
                                     ),
                                   )
                                 else
@@ -374,7 +387,11 @@ class _GroupsPageState extends State<GroupsPage> {
                                   value: 'remove',
                                   child: Text(
                                     reviewing
-                                        ? t('مسترد کریں', 'अस्वीकार करें', 'Reject')
+                                        ? t(
+                                            'مسترد کریں',
+                                            'अस्वीकार करें',
+                                            'Reject',
+                                          )
                                         : t('حذف کریں', 'हटाएँ', 'Delete'),
                                   ),
                                 ),
