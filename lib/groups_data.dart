@@ -22,31 +22,16 @@ class DonationGroups {
 
   static final _apps = <String, Future<FirebaseApp>>{};
 
-  static const _apiKey = String.fromEnvironment('FIREBASE_API_KEY');
-  static const _appId = String.fromEnvironment('FIREBASE_APP_ID');
-  static const _projectId = String.fromEnvironment('FIREBASE_PROJECT_ID');
-  static const _senderId = String.fromEnvironment('FIREBASE_SENDER_ID');
+  static Future<FirebaseApp> _initialize(String name) async {
+    final app = await Firebase.initializeApp();
+    if (name == 'directory') return app;
+    return Firebase.initializeApp(name: name, options: app.options);
+  }
 
   static Future<DonationGroups> connect({required bool admin}) async {
     final name = admin ? 'moderation' : 'directory';
     try {
-      if ([
-        _apiKey,
-        _appId,
-        _projectId,
-        _senderId,
-      ].any((value) => value.isEmpty)) {
-        throw StateError('Firebase is not configured');
-      }
-      final app = await (_apps[name] ??= Firebase.initializeApp(
-        name: name,
-        options: const FirebaseOptions(
-          apiKey: _apiKey,
-          appId: _appId,
-          projectId: _projectId,
-          messagingSenderId: _senderId,
-        ),
-      ));
+      final app = await (_apps[name] ??= _initialize(name));
       return DonationGroups._(app);
     } catch (_) {
       _apps.remove(name);

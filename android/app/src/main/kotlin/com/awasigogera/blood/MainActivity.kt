@@ -1,4 +1,4 @@
-package org.basittv.blood_request
+package com.awasigogera.blood
 
 import android.app.Activity
 import android.content.ClipData
@@ -22,7 +22,7 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         val prefs = getSharedPreferences("blood_request", MODE_PRIVATE)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "org.basittv.blood_request/device")
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.awasigogera.blood/device")
             .setMethodCallHandler { call, result ->
                 try {
                     when (call.method) {

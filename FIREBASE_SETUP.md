@@ -12,13 +12,10 @@ local code. The groups page connects to Firebase only when opened.
    named with that account's UID to `admins` from the console. The document
    can contain `active: true`. Remove the document to revoke moderation
    access. App clients cannot provision roles.
-4. For a local build, set the Android Firebase client configuration with
-   `--dart-define-from-file=PATH`. Use a JSON object with
-   `FIREBASE_API_KEY`, `FIREBASE_APP_ID`, `FIREBASE_PROJECT_ID`, and
-   `FIREBASE_SENDER_ID`. For GitHub Actions, define repository variables with
-   the same names. Use the registered Android app values from Firebase.
-   Never put an admin password or service-account credential in the file or
-   repository.
+4. Android builds use `android/app/google-services.json` and select the
+   `com.awasigogera.blood` client at build time. The moderation session uses a
+   separate Firebase app instance with the same project configuration to keep
+   the administrator and visitor sign-ins independent.
 5. In the app, open the Home menu, choose Admin, and sign in with the
    moderator's Firebase account. Use Add to publish a group directly, or
    review a visitor's submission. Approved group names and invites are public.

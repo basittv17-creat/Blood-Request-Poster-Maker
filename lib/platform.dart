@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'model.dart';
 
 class Device {
-  static const channel = MethodChannel('org.basittv.blood_request/device');
+  static const channel = MethodChannel('com.awasigogera.blood/device');
 
   Future<Map<String, dynamic>> read() async {
     final raw = await channel.invokeMethod<String>('read');

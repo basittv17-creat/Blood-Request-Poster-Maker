@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "264923782755",
+    "project_id": "blood-request-poster-maker",
+    "storage_bucket": "blood-request-poster-maker.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:264923782755:android:de767e9b0e3d5deb1d2256",
+        "android_client_info": {
+          "package_name": "com.awasigogera.blood"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1KArYzJH0WuYFNyRWpSI4HTIgE39GYTw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

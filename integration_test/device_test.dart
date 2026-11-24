@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import 'package:blood_request/groups_data.dart';
 import 'package:blood_request/main.dart';
 import 'package:blood_request/model.dart';
 import 'package:blood_request/platform.dart';
@@ -11,6 +12,21 @@ import 'package:integration_test/integration_test.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('Android resolves Firebase and isolates admin sign-in', (
+    tester,
+  ) async {
+    final directory = await DonationGroups.connect(admin: false);
+    final moderation = await DonationGroups.connect(admin: true);
+
+    expect(directory.auth.app.options.projectId, 'blood-request-poster-maker');
+    expect(
+      directory.auth.app.options.appId,
+      '1:264923782755:android:de767e9b0e3d5deb1d2256',
+    );
+    expect(moderation.auth.app.options.appId, directory.auth.app.options.appId);
+    expect(moderation.auth.app.name, isNot(directory.auth.app.name));
+  });
 
   testWidgets('first launch, saved language, and local storage round trip', (
     tester,
