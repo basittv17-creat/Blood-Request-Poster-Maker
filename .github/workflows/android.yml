@@ -18,11 +18,43 @@ permissions:
   contents: read
 
 jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    outputs:
+      commit_sha: ${{ steps.publish.outputs.commit_sha }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.50.1'
+          channel: stable
+          cache: true
+      - name: Format Dart files and publish any required formatting
+        id: publish
+        run: |
+          dart format lib test integration_test
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add lib test integration_test
+            git commit -m "Apply Dart formatting for final release"
+            git push origin HEAD:main
+          fi
+          echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
   verify:
+    needs: format
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.format.outputs.commit_sha }}
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -46,10 +78,13 @@ jobs:
         run: flutter build apk --debug --no-pub
 
   offline-device-tests:
+    needs: format
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.format.outputs.commit_sha }}
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -79,11 +114,13 @@ jobs:
 
   test-apk:
     if: inputs.build_test_apk || (github.event_name == 'push' && contains(github.event.head_commit.message, '[build-test-apk]'))
-    needs: [verify, offline-device-tests]
+    needs: [format, verify, offline-device-tests]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.format.outputs.commit_sha }}
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -124,6 +161,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
+          ref: ${{ needs.format.outputs.commit_sha }}
           persist-credentials: false
       - uses: actions/setup-java@v5
         with:
