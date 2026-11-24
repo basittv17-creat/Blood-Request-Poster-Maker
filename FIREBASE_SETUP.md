@@ -4,7 +4,7 @@ Poster editing, drafts, templates, rendering, export, and Android sharing use
 local code. The groups page connects to Firebase only when opened.
 
 1. In Firebase Console, create a project on **Spark**, leave billing disabled,
-   and register the Android application `org.basittv.blood_request`.
+   and register the Android application `com.awasigogera.blood`.
 2. Create a Cloud Firestore Standard database in production mode. Deploy the
    repository rules with `firebase deploy --only firestore:rules --project PROJECT_ID`.
 3. Enable the Anonymous and Email/Password sign-in providers. Create the

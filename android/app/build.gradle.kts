@@ -43,7 +43,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "org.basittv.blood_request"
+        applicationId = "com.awasigogera.blood"
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
