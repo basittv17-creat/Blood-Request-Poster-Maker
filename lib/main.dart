@@ -523,7 +523,7 @@ class _WorkspaceState extends State<Workspace> {
             child: const Icon(
               Icons.bloodtype_rounded,
               size: 38,
-              color: Color(0xffa01639),
+              color: colors.primary,
             ),
           ),
           const SizedBox(width: 14),
@@ -560,7 +560,10 @@ class _WorkspaceState extends State<Workspace> {
         child: DecoratedBox(
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xffc51d3a), Color(0xff78152a)],
+              colors: [
+                colors.primary,
+                colors.primary.withValues(alpha: .82),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -576,7 +579,7 @@ class _WorkspaceState extends State<Workspace> {
           child: FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Colors.transparent,
-              foregroundColor: Colors.white,
+              foregroundColor: colors.onPrimary,
               shadowColor: Colors.transparent,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(22),
@@ -589,7 +592,7 @@ class _WorkspaceState extends State<Workspace> {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: .18),
+                    color: colors.onPrimary.withValues(alpha: .18),
                     borderRadius: BorderRadius.circular(13),
                   ),
                   child: const Icon(Icons.add, size: 29),
@@ -620,7 +623,7 @@ class _WorkspaceState extends State<Workspace> {
         child: OutlinedButton(
           style: OutlinedButton.styleFrom(
             foregroundColor: colors.primary,
-            side: const BorderSide(color: Color(0xffa01639), width: 1.3),
+            side: BorderSide(color: colors.primary, width: 1.3),
             backgroundColor: colors.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(22),
@@ -656,7 +659,7 @@ class _WorkspaceState extends State<Workspace> {
         shadowColor: colors.primary.withValues(alpha: .08),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: const BorderSide(color: Color(0xffffeeee)),
+          side: BorderSide(color: colors.outlineVariant),
         ),
         clipBehavior: Clip.antiAlias,
         child: Padding(
@@ -672,7 +675,7 @@ class _WorkspaceState extends State<Workspace> {
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colors.primary,
-                  side: const BorderSide(color: Color(0xffc96c7d)),
+                  side: BorderSide(color: colors.outline),
                   minimumSize: const Size.fromHeight(52),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18),
@@ -692,7 +695,7 @@ class _WorkspaceState extends State<Workspace> {
       const SizedBox(height: 24),
       Row(
         children: [
-          const Icon(Icons.layers_rounded, color: Color(0xffa01639), size: 28),
+          Icon(Icons.layers_rounded, color: colors.primary, size: 28),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -715,7 +718,7 @@ class _WorkspaceState extends State<Workspace> {
           ),
           child: Row(
             children: [
-              const Icon(Icons.description_outlined, color: Color(0xffa01639)),
+              Icon(Icons.description_outlined, color: colors.primary),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -724,7 +727,7 @@ class _WorkspaceState extends State<Workspace> {
                     'आपके सहेजे गए ड्राफ़्ट यहाँ दिखाई देंगे।',
                     'Your saved drafts will appear here.',
                   ),
-                  style: const TextStyle(color: Color(0xff75666a)),
+                  style: TextStyle(color: colors.onSurfaceVariant),
                 ),
               ),
             ],
@@ -732,12 +735,12 @@ class _WorkspaceState extends State<Workspace> {
         ),
       for (final draft in widget.drafts.reversed)
         Card(
-          color: Colors.white,
+          color: colors.surface,
           elevation: 1,
           margin: const EdgeInsets.only(bottom: 9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: Color(0xffffeeee)),
+            side: BorderSide(color: colors.outlineVariant),
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(
@@ -753,7 +756,7 @@ class _WorkspaceState extends State<Workspace> {
               ),
               child: const Icon(
                 Icons.description_outlined,
-                color: Color(0xffa01639),
+                color: colors.primary,
                 size: 29,
               ),
             ),
@@ -763,8 +766,8 @@ class _WorkspaceState extends State<Workspace> {
                   : draft.request['patient'],
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xff321b20),
+              style: TextStyle(
+                color: colors.onSurface,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -774,7 +777,7 @@ class _WorkspaceState extends State<Workspace> {
                   : draft.request['hospital'],
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Color(0xff75666a)),
+              style: TextStyle(color: colors.onSurfaceVariant),
             ),
             onTap: busy
                 ? null
@@ -782,7 +785,7 @@ class _WorkspaceState extends State<Workspace> {
             trailing: IconButton(
               tooltip: t('ڈرافٹ حذف کریں', 'ड्राफ़्ट हटाएँ', 'Delete draft'),
               onPressed: busy ? null : () => removeDrafts(draft.id),
-              icon: const Icon(Icons.delete_outline, color: Color(0xffa01639)),
+              icon: Icon(Icons.delete_outline, color: colors.primary),
             ),
           ),
         ),

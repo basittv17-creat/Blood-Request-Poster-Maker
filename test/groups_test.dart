@@ -44,6 +44,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Admin'), findsOneWidget);
   });
+
   testWidgets('premium home remains usable on a narrow phone in Urdu', (
     tester,
   ) async {
