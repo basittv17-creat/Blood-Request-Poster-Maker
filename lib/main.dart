@@ -544,10 +544,8 @@ class _WorkspaceState extends State<Workspace> {
                     'रक्त अनुरोध • दाता खोजें • जीवन बचाएँ',
                     'Request Blood • Find Donors • Save Lives',
                   ),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: const Color(0xff75666a),
-                    height: 1.35,
-                  ),
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: const Color(0xff75666a), height: 1.35),
                 ),
               ],
             ),
@@ -692,11 +690,7 @@ class _WorkspaceState extends State<Workspace> {
       const SizedBox(height: 24),
       Row(
         children: [
-          const Icon(
-            Icons.layers_rounded,
-            color: Color(0xffa01639),
-            size: 28,
-          ),
+          const Icon(Icons.layers_rounded, color: Color(0xffa01639), size: 28),
           const SizedBox(width: 10),
           Expanded(
             child: Text(

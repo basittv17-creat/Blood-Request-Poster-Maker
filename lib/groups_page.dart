@@ -324,7 +324,8 @@ class _GroupsPageState extends State<GroupsPage> {
                                         : () => run(() async {
                                             if (!await launchUrl(
                                               Uri.parse(invite),
-                                              mode: LaunchMode.externalApplication,
+                                              mode: LaunchMode
+                                                  .externalApplication,
                                             )) {
                                               throw StateError(
                                                 'No application opened the invite',
