@@ -74,7 +74,7 @@ jobs:
           script: bash scripts/emulator-test.sh
 
   test-apk:
-    if: inputs.build_test_apk
+    if: inputs.build_test_apk || (github.event_name == 'push' && contains(github.event.head_commit.message, '[build-test-apk]'))
     needs: [verify, offline-device-tests]
     runs-on: ubuntu-latest
     timeout-minutes: 45
