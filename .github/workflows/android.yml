@@ -94,7 +94,8 @@ jobs:
           mkdir -p ~/.gradle/init.d
           cp scripts/ci-gradle-mirror.init.gradle ~/.gradle/init.d/
       - run: flutter pub get --enforce-lockfile
-      - run: flutter build apk --release --no-pub
+      # Let Flutter regenerate the release registrant without dev-only plugins.
+      - run: flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
           name: blood-request-poster-maker-test-apk
